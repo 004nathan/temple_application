@@ -1,0 +1,1795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>🛕 Temple Management System</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --p:#1D4ED8;--pl:#2563EB;--pd:#1E3A8A;--pale:#EFF6FF;--pb:#BFDBFE;
+  --ac:#0EA5E9;--sf:#fff;--bg:#F0F4F8;--bg2:#E2E8F0;
+  --bd:#E2E8F0;--bds:#CBD5E1;--tx:#0F172A;--tm:#334155;--ts:#64748B;
+  --gn:#16A34A;--gnb:#F0FDF4;--gnr:#BBF7D0;
+  --rd:#DC2626;--rdb:#FEF2F2;--rdr:#FECACA;
+  --am:#D97706;--amb:#FFFBEB;--amr:#FDE68A;
+  --pu:#7C3AED;--pub:#F5F3FF;
+  --sh:0 1px 3px rgba(0,0,0,.07);
+  --shm:0 4px 16px rgba(15,23,42,.10);
+  --shl:0 12px 36px rgba(15,23,42,.16);
+  --r:12px;--rs:8px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--tx);font-size:14px;line-height:1.6;min-height:100vh}
+
+/* ── HEADER ── */
+header{background:linear-gradient(135deg,#1E3A8A,#1E40AF 55%,#1D4ED8);
+  position:sticky;top:0;z-index:200;box-shadow:0 2px 16px rgba(30,64,175,.4)}
+.hdr{max-width:1440px;margin:0 auto;padding:0 24px;height:60px;
+  display:flex;align-items:center;gap:12px}
+.hdr-logo{width:38px;height:38px;background:rgba(255,255,255,.15);border-radius:10px;
+  display:flex;align-items:center;justify-content:center;font-size:1.3rem;
+  flex-shrink:0;border:1px solid rgba(255,255,255,.2)}
+.hdr-text h1{font-size:1rem;font-weight:700;color:#fff;letter-spacing:-.1px}
+.hdr-text p{font-size:.68rem;color:rgba(255,255,255,.55);letter-spacing:.6px;text-transform:uppercase}
+.hdr-pill{margin-left:auto;display:flex;align-items:center;gap:6px;
+  background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);
+  border-radius:999px;padding:4px 12px;font-size:.72rem;color:rgba(255,255,255,.85);flex-shrink:0}
+.dot{width:7px;height:7px;border-radius:50%;background:#4ADE80;
+  box-shadow:0 0 0 2px rgba(74,222,128,.3);animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* ── NAV ── */
+nav{background:var(--sf);border-bottom:1px solid var(--bd);
+  box-shadow:var(--sh);position:sticky;top:60px;z-index:199}
+.nav-wrap{max-width:1440px;margin:0 auto;display:flex;overflow-x:auto;
+  scrollbar-width:none;padding:0 24px}
+.nav-wrap::-webkit-scrollbar{display:none}
+.nb{flex-shrink:0;border:none;background:transparent;font-family:'Inter',sans-serif;
+  font-size:.81rem;font-weight:500;color:var(--ts);cursor:pointer;
+  padding:0 15px;height:44px;position:relative;transition:color .17s;
+  display:flex;align-items:center;gap:5px;white-space:nowrap}
+.nb::after{content:'';position:absolute;bottom:0;left:50%;right:50%;height:2px;
+  background:var(--pl);border-radius:2px 2px 0 0;transition:left .2s,right .2s}
+.nb:hover{color:var(--pl)}
+.nb.on{color:var(--pl);font-weight:600}
+.nb.on::after{left:0;right:0}
+
+/* ── MAIN ── */
+main{max-width:1440px;margin:0 auto;padding:24px 24px 70px}
+
+/* ── SECTIONS ── */
+.sec{display:none;animation:fu .22s ease}
+.sec.on{display:block}
+@keyframes fu{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+
+.sec-hdr{display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:20px;flex-wrap:wrap;gap:10px}
+.sec-ttl{font-size:1.2rem;font-weight:700;color:var(--tx);
+  display:flex;align-items:center;gap:9px}
+.ttl-bar{width:28px;height:3px;background:linear-gradient(90deg,var(--pl),var(--ac));
+  border-radius:2px;display:inline-block}
+
+/* ── CARDS ── */
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
+  gap:14px;margin-bottom:22px}
+.card{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);
+  padding:18px;box-shadow:var(--sh);position:relative;overflow:hidden;
+  transition:box-shadow .2s,transform .2s}
+.card:hover{box-shadow:var(--shm);transform:translateY(-2px)}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.c-inc::before{background:linear-gradient(90deg,#16A34A,#4ADE80)}
+.c-exp::before{background:linear-gradient(90deg,#DC2626,#F87171)}
+.c-bal::before{background:linear-gradient(90deg,var(--p),var(--ac))}
+.c-cnt::before{background:linear-gradient(90deg,var(--pu),#A78BFA)}
+.c-ico{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;
+  justify-content:center;font-size:1.1rem;margin-bottom:10px}
+.c-inc .c-ico{background:var(--gnb)} .c-exp .c-ico{background:var(--rdb)}
+.c-bal .c-ico{background:var(--pale)} .c-cnt .c-ico{background:var(--pub)}
+.c-lbl{font-size:.68rem;font-weight:600;letter-spacing:.9px;text-transform:uppercase;
+  color:var(--ts);margin-bottom:2px}
+.c-val{font-size:1.5rem;font-weight:800;letter-spacing:-.5px;line-height:1.2}
+.c-inc .c-val{color:var(--gn)} .c-exp .c-val{color:var(--rd)}
+.c-bal .c-val{color:var(--pl)} .c-cnt .c-val{color:var(--pu)}
+.c-sub{font-size:.72rem;color:var(--ts);margin-top:3px}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;gap:5px;padding:8px 15px;
+  border-radius:var(--rs);border:none;font-family:'Inter',sans-serif;
+  font-size:.81rem;font-weight:600;cursor:pointer;transition:all .16s;white-space:nowrap}
+.btn-p{background:var(--pl);color:#fff;box-shadow:0 2px 8px rgba(37,99,235,.28)}
+.btn-p:hover{background:var(--p);transform:translateY(-1px);box-shadow:0 4px 14px rgba(37,99,235,.38)}
+.btn-s{background:var(--sf);color:var(--tm);border:1px solid var(--bds)}
+.btn-s:hover{background:var(--bg)}
+.btn-d{background:var(--rd);color:#fff;box-shadow:0 2px 8px rgba(220,38,38,.22)}
+.btn-d:hover{background:#B91C1C}
+.sm{padding:5px 10px;font-size:.76rem;border-radius:6px}
+.xs{padding:4px 8px;font-size:.73rem;border-radius:5px}
+.ic{padding:5px 7px;border-radius:6px}
+
+/* ── TABLE CARD ── */
+.tc{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);
+  overflow:hidden;box-shadow:var(--sh)}
+.tc-hdr{padding:12px 16px;border-bottom:1px solid var(--bd);
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:8px;background:var(--bg)}
+.tc-ttl{font-size:.88rem;font-weight:600;color:var(--tx)}
+.tc-meta{font-size:.74rem;color:var(--ts)}
+.t-scroll{overflow-x:auto}
+
+table{width:100%;border-collapse:collapse}
+thead tr{background:var(--p)}
+th{padding:9px 13px;text-align:left;font-size:.68rem;font-weight:600;
+  letter-spacing:.8px;text-transform:uppercase;color:#BFDBFE;white-space:nowrap}
+tbody tr{border-bottom:1px solid var(--bd);transition:background .1s}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:#EFF6FF}
+td{padding:10px 13px;font-size:.83rem;color:var(--tm);vertical-align:middle}
+.erow td{text-align:center;padding:42px 16px;color:var(--ts);font-size:.87rem}
+
+/* ── BADGES ── */
+.bdg{display:inline-flex;align-items:center;gap:3px;padding:3px 8px;
+  border-radius:999px;font-size:.68rem;font-weight:600;white-space:nowrap}
+.b-ok{background:var(--gnb);color:var(--gn);border:1px solid var(--gnr)}
+.b-wt{background:var(--amb);color:var(--am);border:1px solid var(--amr)}
+.b-lv{background:var(--pale);color:var(--pl);border:1px solid var(--pb)}
+
+/* ── AMOUNTS ── */
+.ai{color:var(--gn);font-weight:600} .ae{color:var(--rd);font-weight:600}
+
+/* ── THUMB ── */
+.th{width:34px;height:34px;border-radius:6px;object-fit:cover;
+  border:1px solid var(--bd);display:block;flex-shrink:0}
+.th-ph{width:34px;height:34px;border-radius:6px;background:var(--pale);
+  border:1px solid var(--pb);display:flex;align-items:center;
+  justify-content:center;font-size:.9rem;flex-shrink:0}
+
+/* ── MODAL ── */
+.ovl{display:none;position:fixed;inset:0;background:rgba(15,23,42,.58);
+  backdrop-filter:blur(4px);z-index:300;align-items:center;
+  justify-content:center;padding:14px}
+.ovl.on{display:flex;animation:fu .18s ease}
+.modal{background:var(--sf);border-radius:16px;width:100%;max-width:570px;
+  max-height:93vh;overflow-y:auto;box-shadow:var(--shl);
+  animation:su .2s ease}
+@keyframes su{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.m-hdr{padding:15px 18px;background:linear-gradient(135deg,#1E3A8A,#1D4ED8);
+  border-radius:16px 16px 0 0;display:flex;align-items:center;
+  justify-content:space-between;position:sticky;top:0;z-index:1}
+.m-ttl{font-size:.95rem;font-weight:700;color:#fff}
+.m-x{background:rgba(255,255,255,.15);border:none;color:#fff;
+  width:28px;height:28px;border-radius:6px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:background .13s}
+.m-x:hover{background:rgba(255,255,255,.28)}
+.m-body{padding:18px}
+.m-foot{padding:11px 18px 16px;display:flex;gap:8px;justify-content:flex-end;
+  border-top:1px solid var(--bd);background:var(--bg);
+  border-radius:0 0 16px 16px;position:sticky;bottom:0}
+
+/* ── FORMS ── */
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.fg .full{grid-column:1/-1}
+.fg2{display:grid;grid-template-columns:1fr;gap:11px}
+.fgrp{display:flex;flex-direction:column;gap:4px}
+label{font-size:.7rem;font-weight:600;color:var(--tm);
+  letter-spacing:.3px;text-transform:uppercase}
+input,select,textarea{padding:8px 10px;border:1.5px solid var(--bds);
+  border-radius:var(--rs);font-family:'Inter',sans-serif;font-size:.85rem;
+  color:var(--tx);background:var(--bg);transition:border-color .17s,box-shadow .17s;
+  outline:none;width:100%}
+input:focus,select:focus,textarea:focus{
+  border-color:var(--pl);box-shadow:0 0 0 3px rgba(37,99,235,.11);background:var(--sf)}
+textarea{resize:vertical;min-height:68px}
+
+/* ── IMAGE PREVIEW ── */
+.img-box{margin-top:8px;border:1.5px dashed var(--pb);border-radius:var(--rs);
+  background:var(--pale);padding:9px;display:none}
+.img-box.show{display:block}
+.img-box img{width:100%;max-height:130px;object-fit:cover;border-radius:5px;display:block}
+.img-err{font-size:.73rem;color:var(--rd);display:none;align-items:center;
+  gap:5px;margin-top:5px;padding:5px 9px;background:var(--rdb);
+  border-radius:5px;border:1px solid var(--rdr)}
+
+/* ── ASSIGNEE ROWS ── */
+.asn-list{display:flex;flex-direction:column;gap:6px;margin-top:7px}
+.asn-row{display:flex;gap:6px;align-items:center}
+.asn-row input{flex:1}
+.add-row-btn{display:inline-flex;align-items:center;gap:4px;padding:5px 10px;
+  margin-top:5px;border:1.5px dashed var(--pb);border-radius:var(--rs);
+  background:transparent;color:var(--pl);font-family:'Inter',sans-serif;
+  font-size:.76rem;font-weight:600;cursor:pointer;transition:all .16s}
+.add-row-btn:hover{background:var(--pale);border-color:var(--pl)}
+
+/* ── INCIDENT TAG ── */
+.itag{display:inline-block;max-width:160px;overflow:hidden;text-overflow:ellipsis;
+  white-space:nowrap;background:var(--rdb);color:var(--rd);
+  border-radius:4px;padding:2px 7px;font-size:.7rem;border:1px solid var(--rdr);
+  vertical-align:middle}
+
+/* ── FILTERS ── */
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;align-items:center}
+.filters select,.filters input[type=month]{
+  padding:6px 10px;font-size:.81rem;min-width:145px;max-width:190px;width:auto}
+
+/* ── BAR CHART ── */
+.bwrap{padding:16px 18px}
+.brow{display:flex;align-items:center;gap:9px;margin-bottom:10px}
+.blbl{width:30px;font-size:.7rem;color:var(--ts);flex-shrink:0;text-align:right}
+.bgrp{flex:1;display:flex;flex-direction:column;gap:3px}
+.btrk{flex:1;background:var(--bg2);border-radius:999px;height:8px;overflow:hidden}
+.bfill{height:100%;border-radius:999px;transition:width .5s ease}
+.gi{background:linear-gradient(90deg,#16A34A,#4ADE80)}
+.ge{background:linear-gradient(90deg,#DC2626,#F87171)}
+.bval{width:82px;font-size:.7rem;font-weight:600;color:var(--tm)}
+
+/* ── HR ── */
+hr{border:none;border-top:1px solid var(--bd);margin:15px 0}
+
+/* ── LOADER ── */
+.loader{display:none;position:fixed;inset:0;background:rgba(240,244,248,.92);
+  z-index:400;align-items:center;justify-content:center;flex-direction:column;gap:13px}
+.loader.on{display:flex}
+.spin{width:36px;height:36px;border-radius:50%;
+  border:3px solid var(--pb);border-top-color:var(--pl);
+  animation:sp .65s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.spin-msg{font-size:.85rem;color:var(--tm);font-weight:500}
+
+/* ── TOASTS ── */
+.toasts{position:fixed;bottom:20px;right:20px;z-index:500;
+  display:flex;flex-direction:column;gap:7px;pointer-events:none}
+.toast{display:flex;align-items:center;gap:8px;background:var(--tx);color:#fff;
+  padding:10px 15px;border-radius:10px;font-size:.81rem;font-weight:500;
+  box-shadow:var(--shl);max-width:300px;pointer-events:auto;
+  animation:tin .2s ease,tout .2s ease 2.8s forwards}
+.t-ok{border-left:4px solid #4ADE80}
+.t-er{border-left:4px solid #F87171;background:#7F1D1D}
+.t-in{border-left:4px solid #60A5FA}
+@keyframes tin{from{opacity:0;transform:translateX(12px)}to{opacity:1;transform:none}}
+@keyframes tout{from{opacity:1}to{opacity:0;transform:translateX(12px)}}
+
+/* ── UTILS ── */
+.mt3{margin-top:12px}.mt4{margin-top:16px}.mt5{margin-top:20px}
+.flex{display:flex}.g1{gap:5px}.g2{gap:8px}.aic{align-items:center}
+.fw6{font-weight:600}.ts{color:var(--ts)}
+.note-box{background:var(--pale);border:1px solid var(--pb);border-radius:var(--r);
+  padding:13px 16px;display:flex;gap:11px;align-items:flex-start;margin-bottom:18px}
+.note-box p{font-size:.81rem;color:var(--tm);line-height:1.6}
+.note-box code{background:rgba(37,99,235,.1);border-radius:3px;padding:1px 5px;
+  font-size:.75rem;color:var(--p);font-family:monospace}
+
+@media(max-width:768px){
+  main{padding:14px 12px 56px}
+  .hdr{padding:0 14px} .hdr-pill{display:none}
+  .fg{grid-template-columns:1fr}
+  th,td{padding:8px 10px}
+  .cards{grid-template-columns:1fr 1fr}
+}
+@media(max-width:480px){.cards{grid-template-columns:1fr}}
+
+/* ── AUTH GATE ── */
+.login-gate{
+  position:fixed;inset:0;z-index:600;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;padding:24px 18px;
+  background:#0c1222;
+}
+.login-gate.off{display:none}
+.login-gate::before{
+  content:'';position:absolute;inset:-40%;
+  background:
+    radial-gradient(ellipse 55% 45% at 20% 30%, rgba(37,99,235,.45), transparent 52%),
+    radial-gradient(ellipse 50% 50% at 85% 20%, rgba(14,165,233,.35), transparent 50%),
+    radial-gradient(ellipse 45% 40% at 70% 85%, rgba(124,58,237,.38), transparent 48%),
+    linear-gradient(165deg,#0f172a 0%,#1e1b4b 40%,#0c4a6e 100%);
+  animation:loginMesh 14s ease-in-out infinite alternate;
+}
+@keyframes loginMesh{
+  0%{transform:translate(0,0) scale(1);opacity:1}
+  100%{transform:translate(-3%,2%) scale(1.06);opacity:.95}
+}
+.login-orb{
+  position:absolute;border-radius:50%;filter:blur(56px);pointer-events:none;
+  animation:loginFloat 9s ease-in-out infinite;
+}
+.login-orb.a{width:min(52vw,340px);height:min(52vw,340px);background:rgba(59,130,246,.35);top:-8%;left:-12%;animation-delay:0s}
+.login-orb.b{width:min(45vw,280px);height:min(45vw,280px);background:rgba(168,85,247,.28);bottom:-5%;right:-8%;animation-delay:-3.5s}
+@keyframes loginFloat{
+  0%,100%{transform:translate(0,0) scale(1)}
+  50%{transform:translate(18px,-14px) scale(1.08)}
+}
+.login-gate-inner{
+  position:relative;z-index:2;width:100%;max-width:440px;
+  display:flex;flex-direction:column;align-items:center;gap:22px;
+  animation:loginReveal .85s cubic-bezier(.22,1,.36,1) forwards;
+}
+@keyframes loginReveal{
+  from{opacity:0;transform:translateY(28px) scale(.97)}
+  to{opacity:1;transform:translateY(0) scale(1)}
+}
+.login-brand{text-align:center;color:#fff}
+.login-brand .lb-ico{
+  width:72px;height:72px;margin:0 auto 14px;border-radius:20px;
+  background:linear-gradient(145deg,rgba(255,255,255,.22),rgba(255,255,255,.06));
+  border:1px solid rgba(255,255,255,.28);
+  display:flex;align-items:center;justify-content:center;font-size:2.1rem;
+  box-shadow:0 12px 40px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.2);
+  animation:loginIconPulse 3.2s ease-in-out infinite;
+}
+@keyframes loginIconPulse{
+  0%,100%{transform:scale(1);box-shadow:0 12px 40px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.2)}
+  50%{transform:scale(1.04);box-shadow:0 16px 48px rgba(37,99,235,.35),inset 0 1px 0 rgba(255,255,255,.25)}
+}
+.login-brand h1{font-size:1.35rem;font-weight:800;letter-spacing:-.4px;text-shadow:0 2px 24px rgba(0,0,0,.2)}
+.login-brand p{font-size:.8rem;color:rgba(255,255,255,.72);margin-top:6px;line-height:1.55;max-width:34ch;margin-left:auto;margin-right:auto}
+.login-card{
+  width:100%;background:rgba(255,255,255,.97);
+  backdrop-filter:blur(12px);
+  border-radius:20px;padding:28px 26px 24px;
+  border:1px solid rgba(255,255,255,.65);
+  box-shadow:0 24px 64px rgba(15,23,42,.35),0 0 0 1px rgba(255,255,255,.08) inset;
+  animation:loginCardPop .75s cubic-bezier(.34,1.56,.64,1) .12s both;
+}
+@keyframes loginCardPop{
+  from{opacity:0;transform:translateY(20px) scale(.94)}
+  to{opacity:1;transform:translateY(0) scale(1)}
+}
+.login-card h2{font-size:1.05rem;font-weight:800;color:var(--tx);margin-bottom:6px}
+.login-card .lc-sub{font-size:.78rem;color:var(--ts);margin-bottom:18px;line-height:1.55}
+.login-fields .fgrp{animation:loginFieldIn .5s ease backwards}
+.login-fields .fgrp:nth-child(1){animation-delay:.28s}
+.login-fields .fgrp:nth-child(2){animation-delay:.38s}
+@keyframes loginFieldIn{
+  from{opacity:0;transform:translateX(-10px)}
+  to{opacity:1;transform:translateX(0)}
+}
+.login-card .li-btn-wrap{margin-top:8px;animation:loginFieldIn .55s ease .48s backwards;
+  border-radius:10px;overflow:hidden}
+.login-card #li-btn{
+  width:100%;justify-content:center;padding:11px 16px;font-size:.88rem;
+  position:relative;overflow:hidden;
+  transition:transform .15s ease,box-shadow .2s ease;
+}
+.login-card #li-btn:hover{transform:translateY(-1px);box-shadow:0 8px 28px rgba(37,99,235,.4)}
+.login-card #li-btn:active{transform:translateY(0)}
+.login-err{font-size:.78rem;color:var(--rd);background:var(--rdb);border:1px solid var(--rdr);
+  border-radius:var(--rs);padding:8px 10px;margin-bottom:12px;display:none;
+  animation:loginShake .45s ease}
+.login-err.on{display:block}
+@keyframes loginShake{
+  0%,100%{transform:translateX(0)}
+  20%{transform:translateX(-6px)}
+  40%{transform:translateX(6px)}
+  60%{transform:translateX(-4px)}
+  80%{transform:translateX(4px)}
+}
+.login-shine{
+  position:absolute;top:0;left:-100%;width:55%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.25),transparent);
+  animation:loginShine 4.5s ease-in-out infinite;
+  pointer-events:none;border-radius:inherit;
+}
+@keyframes loginShine{
+  0%{left:-100%}
+  40%,100%{left:130%}
+}
+.hdr-user{font-size:.72rem;color:rgba(255,255,255,.88);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fn-link{color:var(--pl);cursor:pointer;text-decoration:underline;text-underline-offset:2px;font-weight:600}
+.fn-link:hover{color:var(--p)}
+.asn-mini{font-size:.72rem;color:var(--tm);line-height:1.45;max-width:200px}
+.asn-mini span{display:block}
+.modal-lg{max-width:640px}
+.dv-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.dv-grid .full{grid-column:1/-1}
+.dv-box{background:var(--bg);border:1px solid var(--bd);border-radius:var(--rs);padding:12px 14px}
+.dv-lbl{font-size:.65rem;font-weight:700;color:var(--ts);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.dv-val{font-size:1rem;font-weight:600;color:var(--tx)}
+.dv-asn-table{width:100%;font-size:.83rem;margin-top:6px}
+.dv-asn-table th{text-align:left;padding:6px 8px;background:var(--pale);color:var(--p);font-size:.65rem;text-transform:uppercase}
+.dv-asn-table td{padding:7px 8px;border-bottom:1px solid var(--bd)}
+.source-other-wrap{display:none}
+.source-other-wrap.on{display:block}
+</style>
+</head>
+<body>
+
+<div class="loader" id="loader">
+  <div class="spin"></div>
+  <p class="spin-msg" id="loaderMsg">Connecting to Firebase…</p>
+</div>
+<div class="toasts" id="toasts"></div>
+
+<!-- STAFF LOGIN -->
+<div class="login-gate" id="loginGate">
+  <div class="login-orb a" aria-hidden="true"></div>
+  <div class="login-orb b" aria-hidden="true"></div>
+  <div class="login-gate-inner">
+    <div class="login-brand">
+      <div class="lb-ico" aria-hidden="true">🛕</div>
+      <h1>Temple Management</h1>
+      <p>Secure access for temple staff. Sign in to manage functions, daily records, and finances.</p>
+    </div>
+    <div class="login-card">
+      <h2>Welcome back</h2>
+      <p class="lc-sub">Use the email and password provided by your administrator.</p>
+      <div class="login-err" id="loginErr"></div>
+      <div class="fg2 login-fields">
+        <div class="fgrp"><label>Email</label><input type="email" id="li-email" autocomplete="username" placeholder="name@email.com"/></div>
+        <div class="fgrp"><label>Password</label><input type="password" id="li-pass" autocomplete="current-password" placeholder="Enter password"/></div>
+      </div>
+      <div class="li-btn-wrap" style="position:relative">
+        <span class="login-shine" aria-hidden="true"></span>
+        <button type="button" class="btn btn-p" id="li-btn" style="position:relative;z-index:1">Sign in</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header>
+  <div class="hdr">
+    <div class="hdr-logo">🛕</div>
+    <div class="hdr-text">
+      <h1>Temple Management System</h1>
+      <p>Finance &amp; Records · temple-manager-93cc6</p>
+    </div>
+    <div class="hdr-pill" style="gap:10px">
+      <span class="dot"></span>
+      <span id="dbStatus">Connecting…</span>
+      <span class="hdr-user" id="hdrUser" style="display:none"></span>
+      <button type="button" class="btn btn-s sm" id="btnSignOut" style="display:none;background:rgba(255,255,255,.2);color:#fff;border-color:rgba(255,255,255,.35)">Sign out</button>
+    </div>
+  </div>
+</header>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-wrap">
+    <button class="nb on" data-tab="dashboard">📊 Dashboard</button>
+    <button class="nb" data-tab="functions">🎉 Functions</button>
+    <button class="nb" data-tab="daily">📅 Daily Records</button>
+    <button class="nb" data-tab="incidents">⚠️ Incidents</button>
+    <button class="nb" data-tab="summary">📈 Summary</button>
+    <button type="button" class="nb" id="nb-settings" data-tab="settings" style="display:none" title="Administrator only">⚙️ Settings</button>
+  </div>
+</nav>
+
+<main>
+
+<!-- ═══════════════ DASHBOARD ═══════════════ -->
+<section class="sec on" id="tab-dashboard">
+  <div class="sec-hdr">
+    <div class="sec-ttl">📊 Dashboard <span class="ttl-bar"></span></div>
+    <button class="btn btn-s sm" onclick="refreshAll()">🔄 Refresh</button>
+  </div>
+  <div class="cards">
+    <div class="card c-inc"><div class="c-ico">💰</div><div class="c-lbl">Total Income</div><div class="c-val" id="d-tI">₹0</div><div class="c-sub">Functions + Daily</div></div>
+    <div class="card c-exp"><div class="c-ico">💸</div><div class="c-lbl">Total Expense</div><div class="c-val" id="d-tE">₹0</div><div class="c-sub">Functions + Daily</div></div>
+    <div class="card c-bal"><div class="c-ico">⚖️</div><div class="c-lbl">Net Balance</div><div class="c-val" id="d-bal">₹0</div><div class="c-sub">Income − Expense</div></div>
+    <div class="card c-cnt"><div class="c-ico">🎉</div><div class="c-lbl">Functions</div><div class="c-val" id="d-fc">0</div><div class="c-sub" id="d-fs">0 completed</div></div>
+  </div>
+  <div class="tc">
+    <div class="tc-hdr">
+      <span class="tc-ttl">Recent Functions</span>
+      <button class="btn btn-p sm" onclick="go('functions')">View All →</button>
+    </div>
+    <div class="t-scroll">
+      <table><thead><tr><th>Image</th><th>Function</th><th>Date</th><th>Status</th><th>Income</th><th>Expense</th><th>Balance</th></tr></thead>
+      <tbody id="d-fBody"><tr class="erow"><td colspan="7">Loading…</td></tr></tbody></table>
+    </div>
+  </div>
+  <div class="tc mt5">
+    <div class="tc-hdr">
+      <span class="tc-ttl">Recent Daily Records</span>
+      <button class="btn btn-p sm" onclick="go('daily')">View All →</button>
+    </div>
+    <div class="t-scroll">
+      <table><thead><tr><th>Date</th><th>Source</th><th>Function</th><th>Given by</th><th>Income</th><th>Expense</th><th>Balance</th><th>Notes</th></tr></thead>
+      <tbody id="d-dBody"><tr class="erow"><td colspan="8">Loading…</td></tr></tbody></table>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ FUNCTIONS ═══════════════ -->
+<section class="sec" id="tab-functions">
+  <div class="sec-hdr">
+    <div class="sec-ttl">🎉 Temple Functions <span class="ttl-bar"></span></div>
+    <button class="btn btn-p" onclick="openM('m-addFn')">➕ Add Function</button>
+  </div>
+  <div class="filters">
+    <select id="fn-sf" onchange="renderFn()">
+      <option value="">All Status</option>
+      <option value="Pending">Pending</option>
+      <option value="Ongoing">Ongoing</option>
+      <option value="Completed">Completed</option>
+    </select>
+    <input type="month" id="fn-mf" onchange="renderFn()" title="Filter by month"/>
+    <input type="text" id="fn-af" placeholder="Filter by assignee name…" oninput="renderFn()" style="min-width:160px;max-width:220px;padding:6px 10px;border:1.5px solid var(--bds);border-radius:var(--rs);font-size:.81rem"/>
+    <button class="btn btn-s sm" onclick="$('fn-sf').value='';$('fn-mf').value='';$('fn-af').value='';renderFn()">✕ Clear</button>
+  </div>
+  <p class="ts" style="font-size:.78rem;margin:-6px 0 12px">Click a function name to open details (income, expense, assignees, incident).</p>
+  <div class="tc">
+    <div class="tc-hdr"><span class="tc-ttl">All Functions</span><span class="tc-meta" id="fn-cnt"></span></div>
+    <div class="t-scroll">
+      <table><thead><tr><th>Image</th><th>Function Name</th><th>Date</th><th>Status</th><th>Income</th><th>Expense</th><th>Balance</th><th>Assignees</th><th>Incident</th><th>Actions</th></tr></thead>
+      <tbody id="fn-body"><tr class="erow"><td colspan="10">Loading…</td></tr></tbody></table>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ DAILY RECORDS ═══════════════ -->
+<section class="sec" id="tab-daily">
+  <div class="sec-hdr">
+    <div class="sec-ttl">📅 Daily Records <span class="ttl-bar"></span></div>
+    <button class="btn btn-p" onclick="openAddDr()">➕ Add Record</button>
+  </div>
+  <div class="filters">
+    <input type="month" id="dr-mf" onchange="renderDr()" title="Filter by month"/>
+    <button class="btn btn-s sm" onclick="$('dr-mf').value='';renderDr()">✕ Clear</button>
+  </div>
+  <div class="cards">
+    <div class="card c-inc"><div class="c-ico">💰</div><div class="c-lbl">Income (filtered)</div><div class="c-val" id="dr-i">₹0</div></div>
+    <div class="card c-exp"><div class="c-ico">💸</div><div class="c-lbl">Expense (filtered)</div><div class="c-val" id="dr-e">₹0</div></div>
+    <div class="card c-bal"><div class="c-ico">⚖️</div><div class="c-lbl">Balance</div><div class="c-val" id="dr-b">₹0</div></div>
+  </div>
+  <div class="tc">
+    <div class="tc-hdr"><span class="tc-ttl">Daily Income &amp; Expense Log</span><span class="tc-meta" id="dr-cnt"></span></div>
+    <div class="t-scroll">
+      <table><thead><tr><th>Date</th><th>Source</th><th>Function</th><th>Given by</th><th>Income</th><th>Expense</th><th>Balance</th><th>Notes</th><th>Actions</th></tr></thead>
+      <tbody id="dr-body"><tr class="erow"><td colspan="9">Loading…</td></tr></tbody></table>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ INCIDENTS ═══════════════ -->
+<section class="sec" id="tab-incidents">
+  <div class="sec-hdr">
+    <div class="sec-ttl">⚠️ Incident Reports <span class="ttl-bar"></span></div>
+  </div>
+  <div class="cards">
+    <div class="card c-cnt"><div class="c-ico">📋</div><div class="c-lbl">Total Functions</div><div class="c-val" id="in-t">0</div></div>
+    <div class="card c-exp"><div class="c-ico">⚠️</div><div class="c-lbl">With Incidents</div><div class="c-val" id="in-w">0</div></div>
+    <div class="card c-inc"><div class="c-ico">✅</div><div class="c-lbl">Completed</div><div class="c-val" id="in-d">0</div></div>
+  </div>
+  <div class="tc">
+    <div class="tc-hdr"><span class="tc-ttl">Function Incident Reports</span></div>
+    <div class="t-scroll">
+      <table><thead><tr><th>Function</th><th>Date</th><th>Status</th><th>Incident Report</th><th>Actions</th></tr></thead>
+      <tbody id="in-body"><tr class="erow"><td colspan="5">Loading…</td></tr></tbody></table>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ SUMMARY ═══════════════ -->
+<section class="sec" id="tab-summary">
+  <div class="sec-hdr">
+    <div class="sec-ttl">📈 Monthly &amp; Yearly Summary <span class="ttl-bar"></span></div>
+    <select id="sm-yr" onchange="renderSm()" class="btn btn-s" style="font-weight:600"></select>
+  </div>
+  <div class="cards">
+    <div class="card c-inc"><div class="c-ico">💰</div><div class="c-lbl">Yearly Income</div><div class="c-val" id="sm-i">₹0</div></div>
+    <div class="card c-exp"><div class="c-ico">💸</div><div class="c-lbl">Yearly Expense</div><div class="c-val" id="sm-e">₹0</div></div>
+    <div class="card c-bal"><div class="c-ico">⚖️</div><div class="c-lbl">Yearly Balance</div><div class="c-val" id="sm-b">₹0</div></div>
+    <div class="card c-cnt"><div class="c-ico">🎉</div><div class="c-lbl">Functions This Year</div><div class="c-val" id="sm-f">0</div></div>
+  </div>
+  <div class="tc">
+    <div class="tc-hdr"><span class="tc-ttl">Month-wise Breakdown</span></div>
+    <div class="t-scroll">
+      <table><thead><tr><th>Month</th><th>Func Income</th><th>Func Expense</th><th>Daily Income</th><th>Daily Expense</th><th>Total Income</th><th>Total Expense</th><th>Balance</th></tr></thead>
+      <tbody id="sm-body"><tr class="erow"><td colspan="8">Select a year to view.</td></tr></tbody></table>
+    </div>
+  </div>
+  <div class="tc mt5">
+    <div class="tc-hdr">
+      <span class="tc-ttl">📊 Income vs Expense Chart</span>
+      <div class="flex g2" style="font-size:.72rem;color:var(--ts)">
+        <span class="flex aic g1"><span style="width:9px;height:9px;border-radius:2px;background:#16A34A;display:inline-block"></span>Income</span>
+        <span class="flex aic g1"><span style="width:9px;height:9px;border-radius:2px;background:#DC2626;display:inline-block"></span>Expense</span>
+      </div>
+    </div>
+    <div class="bwrap" id="sm-chart"><p class="ts" style="font-size:.83rem">Select a year above.</p></div>
+  </div>
+</section>
+
+<!-- ═══════════════ SETTINGS ═══════════════ -->
+<section class="sec" id="tab-settings">
+  <div class="sec-hdr">
+    <div class="sec-ttl">⚙️ Settings &amp; Deployment <span class="ttl-bar"></span></div>
+  </div>
+
+  <!-- Firebase Status -->
+  <div class="cards">
+    <div class="card c-bal">
+      <div class="c-ico">🔥</div>
+      <div class="c-lbl">Project ID</div>
+      <div class="c-val" style="font-size:1rem;word-break:break-all">temple-manager-93cc6</div>
+    </div>
+    <div class="card c-inc">
+      <div class="c-ico">🗄️</div>
+      <div class="c-lbl">Database</div>
+      <div class="c-val" style="font-size:1rem">Firestore</div>
+      <div class="c-sub" id="s-dbmode">asia-south1</div>
+    </div>
+    <div class="card c-cnt">
+      <div class="c-ico">📡</div>
+      <div class="c-lbl">Connection</div>
+      <div class="c-val" style="font-size:1rem" id="s-conn">Checking…</div>
+    </div>
+    <div class="card c-cnt">
+      <div class="c-ico">📦</div>
+      <div class="c-lbl">Collections</div>
+      <div class="c-val" style="font-size:1rem">2</div>
+      <div class="c-sub">functions · dailyRecords</div>
+    </div>
+  </div>
+
+  <!-- ── SECURITY RULES ── -->
+  <div class="tc">
+    <div class="tc-hdr"><span class="tc-ttl">🔒 Firestore Security Rules</span></div>
+    <div style="padding:18px 20px;display:flex;flex-direction:column;gap:20px">
+
+      <!-- Test mode rules -->
+      <div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+          <span style="background:#FFFBEB;color:#D97706;border:1px solid #FDE68A;border-radius:999px;padding:2px 10px;font-size:.7rem;font-weight:600">TEST MODE (Current)</span>
+          <span style="font-size:.78rem;color:var(--ts)">Use while building — no restrictions</span>
+        </div>
+        <div style="background:var(--bg);border:1px solid var(--bd);border-radius:var(--rs);padding:13px 15px;font-family:monospace;font-size:.78rem;line-height:1.9;color:var(--tx);position:relative">
+          <button onclick="copyRule('rule-test')" style="position:absolute;top:8px;right:8px;background:var(--sf);border:1px solid var(--bds);border-radius:5px;padding:3px 9px;font-size:.72rem;cursor:pointer;color:var(--tm)">Copy</button>
+          <pre id="rule-test" style="margin:0;white-space:pre-wrap">rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if true;
+    }
+  }
+}</pre>
+        </div>
+        <p style="font-size:.73rem;color:var(--ts);margin-top:6px">⚠️ Anyone on the internet can read/write your data. Fine for internal tools, not for public apps.</p>
+      </div>
+
+      <!-- Production rules -->
+      <div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+          <span style="background:#F0FDF4;color:#16A34A;border:1px solid #BBF7D0;border-radius:999px;padding:2px 10px;font-size:.7rem;font-weight:600">PRODUCTION MODE (Recommended)</span>
+          <span style="font-size:.78rem;color:var(--ts)">Staff only — requires Firebase Auth sign-in</span>
+        </div>
+        <div style="background:var(--bg);border:1px solid var(--bd);border-radius:var(--rs);padding:13px 15px;font-family:monospace;font-size:.78rem;line-height:1.9;color:var(--tx);position:relative">
+          <button onclick="copyRule('rule-prod')" style="position:absolute;top:8px;right:8px;background:var(--sf);border:1px solid var(--bds);border-radius:5px;padding:3px 9px;font-size:.72rem;cursor:pointer;color:var(--tm)">Copy</button>
+          <pre id="rule-prod" style="margin:0;white-space:pre-wrap">rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /functions/{id} {
+      allow read, create, update, delete: if request.auth != null;
+    }
+    match /dailyRecords/{id} {
+      allow read, create, update, delete: if request.auth != null;
+    }
+  }
+}</pre>
+        </div>
+        <p style="font-size:.73rem;color:var(--ts);margin-top:6px">✅ Only signed-in users can read or write. Enable <strong>Authentication → Email/Password</strong> in Firebase Console and add staff users.</p>
+        <p style="font-size:.73rem;color:#B45309;background:#FFFBEB;border:1px solid #FDE68A;border-radius:var(--rs);padding:10px 12px;margin-top:10px;line-height:1.55"><strong>Updates show “Missing or insufficient permissions”?</strong> In the Firebase Console → Firestore → Rules, make sure writes use <code style="font-size:.72rem;background:rgba(0,0,0,.06);padding:1px 5px;border-radius:3px">request.auth != null</code> (signed-in <em>allowed</em>). An older template used <code style="font-size:.72rem">request.auth == null</code>, which <em>blocks</em> signed-in staff from saving. Copy the rules above exactly and click <strong>Publish</strong>.</p>
+      </div>
+
+      <!-- How to apply -->
+      <div style="background:var(--pale);border:1px solid var(--pb);border-radius:var(--rs);padding:13px 15px">
+        <p style="font-size:.82rem;font-weight:600;color:var(--p);margin:0 0 8px">How to apply rules in Firebase Console</p>
+        <ol style="font-size:.78rem;color:var(--tm);line-height:1.9;margin:0;padding-left:18px">
+          <li>Go to <strong>console.firebase.google.com</strong></li>
+          <li>Select project <code style="background:rgba(37,99,235,.1);padding:1px 5px;border-radius:3px;font-size:.73rem">temple-manager-93cc6</code></li>
+          <li>Click <strong>Firestore Database</strong> in the left sidebar</li>
+          <li>Click the <strong>Rules</strong> tab at the top</li>
+          <li>Paste the rules above → Click <strong>Publish</strong></li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── HOSTING GUIDE ── -->
+  <div class="tc mt5">
+    <div class="tc-hdr"><span class="tc-ttl">🌐 Hosting Options</span></div>
+    <div style="padding:18px 20px;display:flex;flex-direction:column;gap:18px">
+
+      <!-- Option 1: Firebase -->
+      <div style="border:1px solid var(--bd);border-radius:var(--rs);overflow:hidden">
+        <div style="background:var(--pale);padding:11px 15px;display:flex;align-items:center;justify-content:space-between">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:.82rem;font-weight:600;color:var(--p)">🔥 Firebase Hosting</span>
+            <span style="background:#F0FDF4;color:#16A34A;border:1px solid #BBF7D0;border-radius:999px;padding:1px 8px;font-size:.68rem;font-weight:600">Recommended · Free</span>
+          </div>
+          <span style="font-size:.72rem;color:var(--ts)">URL: temple-manager-93cc6.web.app</span>
+        </div>
+        <div style="padding:13px 15px">
+          <div style="background:var(--bg);border:1px solid var(--bd);border-radius:var(--rs);padding:11px 13px;font-family:monospace;font-size:.76rem;line-height:2;color:var(--tx)">
+            <div><span style="color:#16A34A">#</span> Install Firebase CLI (once)</div>
+            <div>npm install -g firebase-tools</div>
+            <div style="margin-top:4px"><span style="color:#16A34A">#</span> Login to Firebase</div>
+            <div>firebase login</div>
+            <div style="margin-top:4px"><span style="color:#16A34A">#</span> Create a folder, put your HTML file in it, then:</div>
+            <div>firebase init hosting</div>
+            <div style="margin-top:4px"><span style="color:#16A34A">#</span> Deploy live</div>
+            <div>firebase deploy</div>
+          </div>
+          <p style="font-size:.73rem;color:var(--ts);margin-top:8px">When asked "What do you want to use as your public directory?" → type <code style="background:var(--bg);padding:1px 5px;border-radius:3px">/</code> (current folder). Single page app → <strong>No</strong>.</p>
+        </div>
+      </div>
+
+      <!-- Option 2: Netlify -->
+      <div style="border:1px solid var(--bd);border-radius:var(--rs);overflow:hidden">
+        <div style="background:#F5F3FF;padding:11px 15px;display:flex;align-items:center;justify-content:space-between">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:.82rem;font-weight:600;color:#7C3AED">⚡ Netlify</span>
+            <span style="background:#F5F3FF;color:#7C3AED;border:1px solid #DDD6FE;border-radius:999px;padding:1px 8px;font-size:.68rem;font-weight:600">Drag &amp; Drop · Zero setup</span>
+          </div>
+        </div>
+        <div style="padding:13px 15px">
+          <ol style="font-size:.78rem;color:var(--tm);line-height:2;margin:0;padding-left:18px">
+            <li>Go to <strong>app.netlify.com</strong> → Log in / Sign up (free)</li>
+            <li>Click <strong>"Add new site"</strong> → <strong>"Deploy manually"</strong></li>
+            <li><strong>Drag and drop</strong> your <code style="background:var(--bg);padding:1px 5px;border-radius:3px">temple-management.html</code> file</li>
+            <li>You instantly get a live URL like <code style="background:var(--bg);padding:1px 5px;border-radius:3px">random-name.netlify.app</code></li>
+            <li>Optionally set a custom domain in Site Settings</li>
+          </ol>
+        </div>
+      </div>
+
+      <!-- Option 3: GitHub Pages -->
+      <div style="border:1px solid var(--bd);border-radius:var(--rs);overflow:hidden">
+        <div style="background:var(--bg);padding:11px 15px;display:flex;align-items:center;justify-content:space-between">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:.82rem;font-weight:600;color:var(--tm)">🐙 GitHub Pages</span>
+            <span style="background:var(--bg2);color:var(--tm);border:1px solid var(--bds);border-radius:999px;padding:1px 8px;font-size:.68rem;font-weight:600">Free · Permanent</span>
+          </div>
+        </div>
+        <div style="padding:13px 15px">
+          <ol style="font-size:.78rem;color:var(--tm);line-height:2;margin:0;padding-left:18px">
+            <li>Create a new repo on <strong>github.com</strong></li>
+            <li>Upload <code style="background:var(--bg);padding:1px 5px;border-radius:3px">temple-management.html</code> — rename it to <code style="background:var(--bg);padding:1px 5px;border-radius:3px">index.html</code></li>
+            <li>Go to repo <strong>Settings → Pages</strong></li>
+            <li>Under "Branch" select <strong>main</strong> → <strong>Save</strong></li>
+            <li>Live at <code style="background:var(--bg);padding:1px 5px;border-radius:3px">https://username.github.io/repo-name</code></li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PRODUCTION CHECKLIST ── -->
+  <div class="tc mt5">
+    <div class="tc-hdr"><span class="tc-ttl">✅ Production Readiness Checklist</span></div>
+    <div style="padding:4px 0">
+      <table>
+        <thead><tr><th>Item</th><th>Status</th><th>Action Required</th></tr></thead>
+        <tbody id="s-checklist">
+          <tr>
+            <td>Firebase project created</td>
+            <td><span class="bdg b-ok">✅ Done</span></td>
+            <td class="ts" style="font-size:.75rem">temple-manager-93cc6</td>
+          </tr>
+          <tr>
+            <td>Firestore database created</td>
+            <td><span class="bdg b-ok" id="s-dbStatus">✅ Done</span></td>
+            <td class="ts" style="font-size:.75rem">Connected</td>
+          </tr>
+          <tr>
+            <td>Authentication (Email / Password)</td>
+            <td><span class="bdg b-wt">⚠️ Required</span></td>
+            <td style="font-size:.75rem">Firebase Console → Authentication → Sign-in method → enable Email/Password; add staff users</td>
+          </tr>
+          <tr>
+            <td>Security rules set</td>
+            <td><span class="bdg b-wt">⚠️ Test mode</span></td>
+            <td style="font-size:.75rem">Copy &amp; publish Production rules above (staff must be signed in)</td>
+          </tr>
+          <tr>
+            <td>App hosted online</td>
+            <td><span class="bdg b-wt">⏳ Pending</span></td>
+            <td style="font-size:.75rem">Choose Netlify / Firebase Hosting / GitHub Pages</td>
+          </tr>
+          <tr>
+            <td>Custom domain (optional)</td>
+            <td><span class="bdg b-wt">⏳ Optional</span></td>
+            <td style="font-size:.75rem">Set in Netlify / Firebase Hosting settings</td>
+          </tr>
+          <tr>
+            <td>Data backup</td>
+            <td><span class="bdg b-wt">⏳ Recommended</span></td>
+            <td style="font-size:.75rem">Enable Firestore exports in Google Cloud Console</td>
+          </tr>
+          <tr>
+            <td>Test all CRUD operations</td>
+            <td><span class="bdg b-wt">⏳ Pending</span></td>
+            <td style="font-size:.75rem">Add, edit, delete one function and one daily record</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ── PRODUCTION MODE FAQ ── -->
+  <div class="tc mt5">
+    <div class="tc-hdr"><span class="tc-ttl">❓ Will switching to Production mode break anything?</span></div>
+    <div style="padding:4px 0">
+      <table>
+        <thead><tr><th>Scenario</th><th>Impact</th><th>Fix</th></tr></thead>
+        <tbody>
+          <tr>
+            <td class="fw6">Switch to production mode without updating rules</td>
+            <td><span class="bdg b-wt" style="color:#DC2626;background:#FEF2F2;border-color:#FECACA">🔴 App breaks</span></td>
+            <td style="font-size:.75rem">All reads &amp; writes blocked. Paste the production rules above first.</td>
+          </tr>
+          <tr>
+            <td class="fw6">Switch to production mode after updating rules</td>
+            <td><span class="bdg b-ok">✅ No issue</span></td>
+            <td style="font-size:.75rem">App works normally with the rules provided above.</td>
+          </tr>
+          <tr>
+            <td class="fw6">Test mode expires (30 days)</td>
+            <td><span class="bdg b-wt" style="color:#DC2626;background:#FEF2F2;border-color:#FECACA">🔴 App breaks</span></td>
+            <td style="font-size:.75rem">Paste either set of rules before expiry to avoid downtime.</td>
+          </tr>
+          <tr>
+            <td class="fw6">Existing data in Firestore</td>
+            <td><span class="bdg b-ok">✅ Safe</span></td>
+            <td style="font-size:.75rem">Switching modes never deletes data. Only affects read/write access.</td>
+          </tr>
+          <tr>
+            <td class="fw6">Someone else opens the hosted URL</td>
+            <td><span class="bdg b-ok">✅ Blocked</span></td>
+            <td style="font-size:.75rem">Without a staff sign-in they cannot load Firestore data. The page shell may still load.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</section>
+</main>
+
+<!-- ══════════════════════════════════
+     MODALS
+══════════════════════════════════ -->
+
+<!-- Add Function -->
+<div class="ovl" id="m-addFn">
+  <div class="modal">
+    <div class="m-hdr"><span class="m-ttl">🎉 Add New Function</span><button class="m-x" onclick="closeM('m-addFn')">✕</button></div>
+    <div class="m-body">
+      <div class="fg">
+        <div class="fgrp full"><label>Function Name *</label><input type="text" id="af-name" placeholder="e.g. Aadi Festival, Karthigai Deepam…"/></div>
+        <div class="fgrp"><label>Date *</label><input type="date" id="af-date"/></div>
+        <div class="fgrp"><label>Status</label>
+          <select id="af-status"><option value="Pending">⏳ Pending</option><option value="Ongoing">🔄 Ongoing</option><option value="Completed">✅ Completed</option></select>
+        </div>
+        <div class="fgrp"><label>Income (₹)</label><input type="number" id="af-income" placeholder="0" min="0"/></div>
+        <div class="fgrp"><label>Expense (₹)</label><input type="number" id="af-expense" placeholder="0" min="0"/></div>
+        <div class="fgrp full"><label>Incident / Notes</label><textarea id="af-incident" placeholder="Crowd notes, special observations, incidents…"></textarea></div>
+        <div class="fgrp full">
+          <label>🖼️ Image URL <span style="text-transform:none;font-weight:400;color:var(--ts)">(Cloudinary / any direct link)</span></label>
+          <input type="text" id="af-img" placeholder="https://example.com/photo.jpg" oninput="prevImg('af-img','af-box','af-pic','af-err')"/>
+          <div class="img-box" id="af-box"><img id="af-pic" src="" alt=""/><p class="img-err" id="af-err">⚠️ Cannot load — check URL</p></div>
+        </div>
+      </div>
+      <hr/>
+      <div class="fgrp"><label>👥 Assignees &amp; Spending</label>
+        <div class="asn-list" id="af-asn"></div>
+        <button class="add-row-btn" onclick="addAsn('af-asn')">➕ Add Assignee</button>
+      </div>
+    </div>
+    <div class="m-foot">
+      <button class="btn btn-s sm" onclick="closeM('m-addFn')">Cancel</button>
+      <button class="btn btn-p sm" onclick="saveFn()">💾 Save Function</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Function -->
+<div class="ovl" id="m-editFn">
+  <div class="modal">
+    <div class="m-hdr"><span class="m-ttl">✏️ Edit Function</span><button class="m-x" onclick="closeM('m-editFn')">✕</button></div>
+    <div class="m-body">
+      <input type="hidden" id="ef-id"/>
+      <div class="fg">
+        <div class="fgrp full"><label>Function Name *</label><input type="text" id="ef-name"/></div>
+        <div class="fgrp"><label>Date *</label><input type="date" id="ef-date"/></div>
+        <div class="fgrp"><label>Status</label>
+          <select id="ef-status"><option value="Pending">⏳ Pending</option><option value="Ongoing">🔄 Ongoing</option><option value="Completed">✅ Completed</option></select>
+        </div>
+        <div class="fgrp"><label>Income (₹)</label><input type="number" id="ef-income" min="0"/></div>
+        <div class="fgrp"><label>Expense (₹)</label><input type="number" id="ef-expense" min="0"/></div>
+        <div class="fgrp full"><label>Incident / Notes</label><textarea id="ef-incident"></textarea></div>
+        <div class="fgrp full">
+          <label>🖼️ Image URL</label>
+          <input type="text" id="ef-img" placeholder="https://…" oninput="prevImg('ef-img','ef-box','ef-pic','ef-err')"/>
+          <div class="img-box" id="ef-box"><img id="ef-pic" src="" alt=""/><p class="img-err" id="ef-err">⚠️ Cannot load — check URL</p></div>
+        </div>
+      </div>
+      <hr/>
+      <div class="fgrp"><label>👥 Assignees &amp; Spending</label>
+        <div class="asn-list" id="ef-asn"></div>
+        <button class="add-row-btn" onclick="addAsn('ef-asn')">➕ Add Assignee</button>
+      </div>
+    </div>
+    <div class="m-foot">
+      <button class="btn btn-s sm" onclick="closeM('m-editFn')">Cancel</button>
+      <button class="btn btn-p sm" onclick="updateFn()">✅ Update</button>
+    </div>
+  </div>
+</div>
+
+<!-- View Function (read-only detail) -->
+<div class="ovl" id="m-viewFn">
+  <div class="modal modal-lg">
+    <div class="m-hdr"><span class="m-ttl">🎉 Function Details</span><button class="m-x" onclick="closeM('m-viewFn')">✕</button></div>
+    <div class="m-body" id="vf-body"></div>
+    <div class="m-foot">
+      <button class="btn btn-s sm" onclick="closeM('m-viewFn')">Close</button>
+      <button type="button" class="btn btn-p sm" id="vf-editBtn">✏️ Edit this function</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Daily Record -->
+<div class="ovl" id="m-addDr">
+  <div class="modal">
+    <div class="m-hdr"><span class="m-ttl">📅 Add Daily Record</span><button class="m-x" onclick="closeM('m-addDr')">✕</button></div>
+    <div class="m-body">
+      <div class="fg">
+        <div class="fgrp full"><label>Date *</label><input type="date" id="ad-date"/></div>
+        <div class="fgrp full"><label>Which function <span style="text-transform:none;font-weight:400;color:var(--ts)">(optional)</span></label>
+          <select id="ad-fnId"><option value="">— None / general temple —</option></select>
+        </div>
+        <div class="fgrp full"><label>Source / category *</label>
+          <select id="ad-source" onchange="toggleSourceOther('ad')">
+            <option value="Donation box">Donation box</option>
+            <option value="Pooja fees">Pooja fees</option>
+            <option value="Piggy bank">Piggy bank</option>
+            <option value="Hundi">Hundi</option>
+            <option value="Prasad / sales">Prasad / sales</option>
+            <option value="Miscellaneous">Miscellaneous</option>
+            <option value="Other">Other (specify)</option>
+          </select>
+        </div>
+        <div class="fgrp full source-other-wrap" id="ad-sourceWrap"><label>Describe source</label><input type="text" id="ad-sourceOther" placeholder="e.g. Special collection…"/></div>
+        <div class="fgrp full"><label>Who gave / received <span style="text-transform:none;font-weight:400;color:var(--ts)">(optional)</span></label>
+          <input type="text" id="ad-givenBy" placeholder="Devotee name, staff member, vendor…"/>
+        </div>
+        <div class="fgrp"><label>Income (₹)</label><input type="number" id="ad-income" placeholder="0" min="0"/></div>
+        <div class="fgrp"><label>Expense (₹)</label><input type="number" id="ad-expense" placeholder="0" min="0"/></div>
+        <div class="fgrp full"><label>Notes</label><input type="text" id="ad-notes" placeholder="Extra details…"/></div>
+      </div>
+    </div>
+    <div class="m-foot">
+      <button class="btn btn-s sm" onclick="closeM('m-addDr')">Cancel</button>
+      <button class="btn btn-p sm" onclick="saveDr()">💾 Save Record</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Daily Record -->
+<div class="ovl" id="m-editDr">
+  <div class="modal">
+    <div class="m-hdr"><span class="m-ttl">✏️ Edit Daily Record</span><button class="m-x" onclick="closeM('m-editDr')">✕</button></div>
+    <div class="m-body">
+      <input type="hidden" id="ed-id"/>
+      <div class="fg">
+        <div class="fgrp full"><label>Date *</label><input type="date" id="ed-date"/></div>
+        <div class="fgrp full"><label>Which function <span style="text-transform:none;font-weight:400;color:var(--ts)">(optional)</span></label>
+          <select id="ed-fnId"><option value="">— None / general temple —</option></select>
+        </div>
+        <div class="fgrp full"><label>Source / category *</label>
+          <select id="ed-source" onchange="toggleSourceOther('ed')">
+            <option value="Donation box">Donation box</option>
+            <option value="Pooja fees">Pooja fees</option>
+            <option value="Piggy bank">Piggy bank</option>
+            <option value="Hundi">Hundi</option>
+            <option value="Prasad / sales">Prasad / sales</option>
+            <option value="Miscellaneous">Miscellaneous</option>
+            <option value="Other">Other (specify)</option>
+          </select>
+        </div>
+        <div class="fgrp full source-other-wrap" id="ed-sourceWrap"><label>Describe source</label><input type="text" id="ed-sourceOther"/></div>
+        <div class="fgrp full"><label>Who gave / received</label><input type="text" id="ed-givenBy"/></div>
+        <div class="fgrp"><label>Income (₹)</label><input type="number" id="ed-income" min="0"/></div>
+        <div class="fgrp"><label>Expense (₹)</label><input type="number" id="ed-expense" min="0"/></div>
+        <div class="fgrp full"><label>Notes</label><input type="text" id="ed-notes"/></div>
+      </div>
+    </div>
+    <div class="m-foot">
+      <button class="btn btn-s sm" onclick="closeM('m-editDr')">Cancel</button>
+      <button class="btn btn-p sm" onclick="updateDr()">✅ Update</button>
+    </div>
+  </div>
+</div>
+
+<!-- Incident Modal -->
+<div class="ovl" id="m-inc">
+  <div class="modal">
+    <div class="m-hdr"><span class="m-ttl">⚠️ Update Incident Report</span><button class="m-x" onclick="closeM('m-inc')">✕</button></div>
+    <div class="m-body">
+      <input type="hidden" id="ic-id"/>
+      <div class="fgrp"><label>Incident Details</label><textarea id="ic-text" rows="5" placeholder="Describe what happened…"></textarea></div>
+      <div class="fgrp mt4"><label>Function Status</label>
+        <select id="ic-status"><option value="Pending">⏳ Pending</option><option value="Ongoing">🔄 Ongoing</option><option value="Completed">✅ Completed</option></select>
+      </div>
+    </div>
+    <div class="m-foot">
+      <button class="btn btn-s sm" onclick="closeM('m-inc')">Cancel</button>
+      <button class="btn btn-p sm" onclick="saveInc()">✅ Save Report</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     APP SCRIPT — ES Module (works everywhere)
+══════════════════════════════════ -->
+<script type="module">
+/* ─── Firebase ES Module imports ─── */
+import { initializeApp }
+  from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+import {
+  getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut
+} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+import {
+  getFirestore, collection, addDoc, getDocs, doc,
+  updateDoc, deleteDoc, query, orderBy
+} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+
+/* ─── Config ─── */
+const CFG = {
+  apiKey:            'AIzaSyCZSGW7IC_Xp-qtiriada68tJObdKLaz7A',
+  authDomain:        'temple-manager-93cc6.firebaseapp.com',
+  projectId:         'temple-manager-93cc6',
+  storageBucket:     'temple-manager-93cc6.firebasestorage.app',
+  messagingSenderId: '510493809521',
+  appId:             '1:510493809521:web:0d7927c2d64557120eb4d0'
+};
+
+/** Staff emails allowed to use the app. Leave empty [] to allow any signed-in Firebase user. */
+const STAFF_ALLOWLIST = ['parvathinathanbala@gmail.com'];
+
+/** Only this signed-in user sees the Settings tab (rules, hosting, checklist). Case-insensitive. */
+const SETTINGS_ADMIN_EMAIL = 'parvathinathanbala@gmail.com';
+
+const app  = initializeApp(CFG);
+const db   = getFirestore(app);
+const auth = getAuth(app);
+
+/* ─── Collections ─── */
+const C_FN = 'functions';
+const C_DR = 'dailyRecords';
+
+const SOURCE_VALUES = ['Donation box','Pooja fees','Piggy bank','Hundi','Prasad / sales','Miscellaneous','Other'];
+
+/* ─── State ─── */
+let fns = [];
+let drs = [];
+let dataBooted = false;
+let lastAuthUid = null;
+
+/* ─── Expose helpers to global so onclick="" works ─── */
+const G = window;
+
+/* ── $ shorthand ── */
+G.$ = id => document.getElementById(id);
+
+function isStaff(user) {
+  if (!user || !user.email) return false;
+  if (!STAFF_ALLOWLIST.length) return true;
+  const em = user.email.toLowerCase();
+  return STAFF_ALLOWLIST.some(x => String(x).toLowerCase() === em);
+}
+
+function isSettingsAdmin(user) {
+  if (!user || !user.email) return false;
+  return user.email.toLowerCase() === String(SETTINGS_ADMIN_EMAIL).toLowerCase();
+}
+
+/** Refreshes ID token so Firestore sees a signed-in user; avoids stale permission errors. */
+async function ensureSignedInForFirestore() {
+  const u = auth.currentUser;
+  if (!u) throw new Error('Not signed in. Please sign in again.');
+  await u.getIdToken(true);
+}
+
+function syncSettingsNav(user) {
+  const btn = $('nb-settings');
+  if (!btn) return;
+  const show = isSettingsAdmin(user);
+  btn.style.display = show ? '' : 'none';
+  if (!show && $('tab-settings') && $('tab-settings').classList.contains('on')) G.go('dashboard');
+}
+
+function fillFnDropdowns() {
+  [['ad-fnId'],['ed-fnId']].forEach(([id]) => {
+    const sel = $(id);
+    const cur = sel.value;
+    sel.innerHTML = '<option value="">— None / general temple —</option>';
+    fns.slice().sort((a,b)=>(b.date||'').localeCompare(a.date||'')).forEach(f => {
+      const o = document.createElement('option');
+      o.value = f.id;
+      o.textContent = (f.name || '—') + ' · ' + (f.date || '');
+      sel.appendChild(o);
+    });
+    if ([...sel.options].some(o => o.value === cur)) sel.value = cur;
+  });
+}
+
+G.toggleSourceOther = function(prefix) {
+  const v = $(prefix + '-source').value;
+  $(prefix + '-sourceWrap').classList.toggle('on', v === 'Other');
+};
+
+function drDisplaySource(d) {
+  const c = d.sourceCategory || '';
+  if (c === 'Other' && d.sourceOther) return 'Other: ' + d.sourceOther;
+  if (c) return c;
+  return d.notes ? d.notes : '—';
+}
+
+function drFnNameCell(d) {
+  if (d.functionName) return e(d.functionName);
+  if (d.functionId) {
+    const fn = fns.find(x => x.id === d.functionId);
+    return fn ? e(fn.name || '—') : '<span class="ts">(deleted)</span>';
+  }
+  return '<span class="ts">—</span>';
+}
+
+function rowAsnHtml(f) {
+  const arr = Array.isArray(f.assignees) ? f.assignees.filter(a => a && a.name) : [];
+  if (!arr.length) return '<span class="ts" style="font-size:.72rem">None</span>';
+  const parts = arr.map(a =>
+    '<span><b>' + e(a.name) + '</b> · ' + fmt(a.spent || 0) + '</span>');
+  return '<div class="asn-mini">' + parts.join('') + '</div>';
+}
+
+function fnMatchesAssigneeFilter(f, q) {
+  if (!q) return true;
+  const ql = q.toLowerCase();
+  const arr = Array.isArray(f.assignees) ? f.assignees : [];
+  return arr.some(a => (a.name || '').toLowerCase().includes(ql));
+}
+
+G.openAddDr = function() {
+  fillFnDropdowns();
+  $('ad-date').value = today();
+  $('ad-fnId').value = '';
+  $('ad-income').value = '';
+  $('ad-expense').value = '';
+  $('ad-notes').value = '';
+  $('ad-givenBy').value = '';
+  $('ad-source').value = 'Donation box';
+  $('ad-sourceOther').value = '';
+  G.toggleSourceOther('ad');
+  openM('m-addDr');
+};
+
+G.doSignOut = async function() {
+  $('loginErr').classList.remove('on');
+  $('loginErr').textContent = '';
+  try { await signOut(auth); } catch (err) { toast(err.message, 'er'); }
+};
+
+async function tryLogin() {
+  const errEl = $('loginErr');
+  errEl.classList.remove('on');
+  errEl.textContent = '';
+  const email = $('li-email').value.trim();
+  const pass = $('li-pass').value;
+  if (!email || !pass) { errEl.textContent = 'Enter email and password.'; errEl.classList.add('on'); return; }
+  load(true, 'Signing in…');
+  try {
+    const cred = await signInWithEmailAndPassword(auth, email, pass);
+    if (!isStaff(cred.user)) {
+      await signOut(auth);
+      errEl.textContent = 'This account is not on the staff list.';
+      errEl.classList.add('on');
+    }
+  } catch (ex) {
+    errEl.textContent = ex.message || 'Sign-in failed';
+    errEl.classList.add('on');
+  }
+  load(false);
+}
+
+$('li-btn').addEventListener('click', tryLogin);
+$('li-pass').addEventListener('keydown', ev => { if (ev.key === 'Enter') tryLogin(); });
+$('btnSignOut').addEventListener('click', () => G.doSignOut());
+
+/* ── Format currency ── */
+function fmt(n) { return '₹' + Number(n||0).toLocaleString('en-IN'); }
+
+/* ── Loading ── */
+function load(on, msg) {
+  $('loader').classList.toggle('on', on);
+  if (msg) $('loaderMsg').textContent = msg;
+}
+
+/* ── Toast ── */
+G.toast = function(msg, type) {
+  type = type || 'ok';
+  const el = document.createElement('div');
+  el.className = 'toast t-' + type;
+  el.textContent = (type==='ok'?'✅':type==='er'?'❌':'ℹ️') + ' ' + msg;
+  $('toasts').appendChild(el);
+  setTimeout(() => el.remove(), 3200);
+};
+
+/* ── Modal ── */
+G.openM  = id => $(id).classList.add('on');
+G.closeM = id => $(id).classList.remove('on');
+document.querySelectorAll('.ovl').forEach(o =>
+  o.addEventListener('click', e => { if (e.target===o) o.classList.remove('on'); }));
+document.addEventListener('keydown', e => {
+  if (e.key==='Escape') document.querySelectorAll('.ovl.on')
+    .forEach(o => o.classList.remove('on'));
+});
+
+/* ── Tab switch ── */
+G.go = function(tab) {
+  if (tab === 'settings' && (!auth.currentUser || !isSettingsAdmin(auth.currentUser))) tab = 'dashboard';
+  document.querySelectorAll('.nb').forEach(b => b.classList.toggle('on', b.dataset.tab===tab));
+  document.querySelectorAll('.sec').forEach(s => s.classList.toggle('on', s.id==='tab-'+tab));
+  if (tab==='summary') renderSm();
+};
+document.querySelectorAll('.nb').forEach(b =>
+  b.addEventListener('click', () => G.go(b.dataset.tab)));
+
+/* ── Escape HTML ── */
+function e(s) {
+  return String(s||'')
+    .replace(/&/g,'&amp;').replace(/"/g,'&quot;')
+    .replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+/* ── Badge ── */
+function bdg(s) {
+  const c = s==='Completed'?'b-ok':s==='Ongoing'?'b-lv':'b-wt';
+  const i = s==='Completed'?'✅':s==='Ongoing'?'🔄':'⏳';
+  return `<span class="bdg ${c}">${i} ${e(s||'Pending')}</span>`;
+}
+
+/* ── Thumb ── */
+function th(url) {
+  return url && url.trim()
+    ? `<img class="th" src="${e(url)}" alt="" loading="lazy" onerror="this.outerHTML='<div class=th-ph>🛕</div>'">`
+    : '<div class="th-ph">🛕</div>';
+}
+
+/* ── Image live preview ── */
+G.prevImg = function(iId, bId, pId, eId) {
+  const url = $(iId).value.trim();
+  const box=$(bId), img=$(pId), err=$(eId);
+  if (!url) { box.classList.remove('show'); return; }
+  img.src = url;
+  img.onload  = () => { box.classList.add('show'); img.style.display='block'; err.style.display='none'; };
+  img.onerror = () => { box.classList.add('show'); img.style.display='none'; err.style.display='flex'; };
+};
+
+/* ── Assignee rows ── */
+G.addAsn = function(listId) {
+  const row = document.createElement('div');
+  row.className = 'asn-row';
+  row.innerHTML = '<input type="text" placeholder="Assignee name" class="asn-n"/>'
+    + '<input type="number" placeholder="₹ Amount" class="asn-s" min="0"/>'
+    + '<button class="btn btn-d xs ic" onclick="this.parentElement.remove()">✕</button>';
+  $(listId).appendChild(row);
+};
+
+function gatherAsn(listId) {
+  const rows = [];
+  $(listId).querySelectorAll('.asn-row').forEach(r => {
+    const n = r.querySelector('.asn-n').value.trim();
+    const s = Number(r.querySelector('.asn-s').value || 0);
+    if (n) rows.push({ name: n, spent: s });
+  });
+  return rows;
+}
+
+/* ─────── FETCH ─────── */
+async function fetchFns() {
+  try {
+    const snap = await getDocs(query(collection(db, C_FN), orderBy('date','desc')));
+    fns = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  } catch {
+    /* Fallback if composite index not yet created */
+    const snap = await getDocs(collection(db, C_FN));
+    fns = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    fns.sort((a,b) => (b.date||'').localeCompare(a.date||''));
+  }
+}
+async function fetchDrs() {
+  try {
+    const snap = await getDocs(query(collection(db, C_DR), orderBy('date','desc')));
+    drs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  } catch {
+    const snap = await getDocs(collection(db, C_DR));
+    drs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    drs.sort((a,b) => (b.date||'').localeCompare(a.date||''));
+  }
+}
+
+/* ─────── RENDER DASHBOARD ─────── */
+function renderDash() {
+  const fI = fns.reduce((s,f)=>s+Number(f.income||0),0);
+  const fE = fns.reduce((s,f)=>s+Number(f.expense||0),0);
+  const dI = drs.reduce((s,d)=>s+Number(d.income||0),0);
+  const dE = drs.reduce((s,d)=>s+Number(d.expense||0),0);
+  const tI=fI+dI, tE=fE+dE;
+  $('d-tI').textContent = fmt(tI);
+  $('d-tE').textContent = fmt(tE);
+  $('d-bal').textContent = fmt(tI-tE);
+  $('d-fc').textContent  = fns.length;
+  $('d-fs').textContent  = fns.filter(f=>f.status==='Completed').length + ' completed';
+
+  const r5 = fns.slice(0,5);
+  $('d-fBody').innerHTML = r5.length ? r5.map(f => {
+    const b = Number(f.income||0)-Number(f.expense||0);
+    return `<tr>${td(th(f.imageUrl))}${td('<b>'+e(f.name||'—')+'</b>')}${td(f.date||'—')}${td(bdg(f.status))}
+    ${td(fmt(f.income),'ai')}${td(fmt(f.expense),'ae')}${td(fmt(b),b>=0?'ai':'ae')}</tr>`;
+  }).join('') : '<tr class="erow"><td colspan="7">No functions yet.</td></tr>';
+
+  const d5 = drs.slice(0,5);
+  $('d-dBody').innerHTML = d5.length ? d5.map(d => {
+    const b = Number(d.income||0)-Number(d.expense||0);
+    return `<tr>${td(d.date||'—')}${td(e(drDisplaySource(d)),'ts')}${td(drFnNameCell(d))}
+    ${td(e(d.givenBy||'—'),'ts')}${td(fmt(d.income),'ai')}${td(fmt(d.expense),'ae')}
+    ${td(fmt(b),b>=0?'ai':'ae')}${td(e(d.notes||'—'),'ts')}</tr>`;
+  }).join('') : '<tr class="erow"><td colspan="8">No daily records yet.</td></tr>';
+}
+
+function td(v, cls='') { return `<td${cls?' class="'+cls+'"':''}>${v}</td>`; }
+
+/* ─────── RENDER FUNCTIONS TABLE ─────── */
+G.renderFn = function() {
+  const sf = $('fn-sf').value;
+  const mf = $('fn-mf').value;
+  const af = ($('fn-af').value || '').trim();
+  const list = fns.filter(f =>
+    (!sf || f.status===sf) && (!mf || (f.date||'').startsWith(mf)) && fnMatchesAssigneeFilter(f, af));
+  $('fn-cnt').textContent = list.length + ' record(s)';
+  $('fn-body').innerHTML = list.length ? list.map(f => {
+    const b   = Number(f.income||0)-Number(f.expense||0);
+    const hasI = f.incident && f.incident.trim();
+    return `<tr>
+      ${td(th(f.imageUrl))}
+      ${td('<span class="fn-link" onclick="openViewFn(\''+f.id+'\')">'+e(f.name||'—')+'</span>')}
+      ${td(f.date||'—')}
+      ${td(bdg(f.status))}
+      ${td(fmt(f.income),'ai')}
+      ${td(fmt(f.expense),'ae')}
+      ${td(fmt(b),b>=0?'ai':'ae')}
+      ${td(rowAsnHtml(f))}
+      ${td(hasI?`<span class="itag" title="${e(f.incident)}">${e(f.incident)}</span>`:'<span class="ts" style="font-size:.72rem">None</span>')}
+      <td><div class="flex g1">
+        <button class="btn btn-s xs ic" onclick="openEditFn('${f.id}')">✏️</button>
+        <button class="btn btn-d xs ic" onclick="delFn('${f.id}')">🗑️</button>
+      </div></td>
+    </tr>`;
+  }).join('') : '<tr class="erow"><td colspan="10">No functions found.</td></tr>';
+};
+
+G.openViewFn = function(id) {
+  const f = fns.find(x => x.id === id);
+  if (!f) return;
+  const b = Number(f.income||0) - Number(f.expense||0);
+  const asnRows = (Array.isArray(f.assignees) ? f.assignees : []).filter(a => a && a.name);
+  const asnTable = asnRows.length
+    ? '<table class="dv-asn-table"><thead><tr><th>Assignee</th><th>Amount</th></tr></thead><tbody>'
+      + asnRows.map(a => '<tr><td>' + e(a.name) + '</td><td class="ae">' + fmt(a.spent || 0) + '</td></tr>').join('')
+      + '</tbody></table>'
+    : '<p class="ts" style="font-size:.85rem">No assignees recorded.</p>';
+  const inc = f.incident && String(f.incident).trim();
+  $('vf-body').innerHTML = `
+    <div class="dv-grid">
+      <div class="dv-box full" style="display:flex;gap:14px;align-items:flex-start">
+        ${f.imageUrl ? '<div>'+th(f.imageUrl)+'</div>' : ''}
+        <div style="flex:1;min-width:0">
+          <div class="dv-lbl">Function</div>
+          <div style="font-size:1.15rem;font-weight:800">${e(f.name||'—')}</div>
+          <div class="ts" style="margin-top:4px">${e(f.date||'—')} · ${bdg(f.status)}</div>
+        </div>
+      </div>
+      <div class="dv-box"><div class="dv-lbl">Income</div><div class="dv-val ai">${fmt(f.income)}</div></div>
+      <div class="dv-box"><div class="dv-lbl">Expense</div><div class="dv-val ae">${fmt(f.expense)}</div></div>
+      <div class="dv-box full"><div class="dv-lbl">Net balance</div><div class="dv-val" style="color:${b>=0?'var(--gn)':'var(--rd)'}">${fmt(b)}</div></div>
+      <div class="dv-box full">
+        <div class="dv-lbl">Assignees</div>
+        ${asnTable}
+      </div>
+      <div class="dv-box full">
+        <div class="dv-lbl">Incident / notes</div>
+        <div style="font-size:.88rem;color:var(--tm);white-space:pre-wrap;word-break:break-word">${inc ? e(inc) : '<span class="ts">None recorded</span>'}</div>
+      </div>
+    </div>`;
+  $('vf-editBtn').onclick = () => { closeM('m-viewFn'); G.openEditFn(id); };
+  openM('m-viewFn');
+};
+
+/* ─────── RENDER DAILY TABLE ─────── */
+G.renderDr = function() {
+  const mf = $('dr-mf').value;
+  const list = drs.filter(d => !mf || (d.date||'').startsWith(mf));
+  const tI = list.reduce((s,d)=>s+Number(d.income||0),0);
+  const tE = list.reduce((s,d)=>s+Number(d.expense||0),0);
+  $('dr-i').textContent   = fmt(tI);
+  $('dr-e').textContent   = fmt(tE);
+  $('dr-b').textContent   = fmt(tI-tE);
+  $('dr-cnt').textContent = list.length + ' record(s)';
+  $('dr-body').innerHTML = list.length ? list.map(d => {
+    const b = Number(d.income||0)-Number(d.expense||0);
+    return `<tr>
+      ${td(d.date||'—')}${td(e(drDisplaySource(d)),'ts')}${td(drFnNameCell(d))}
+      ${td(e(d.givenBy||'—'),'ts')}${td(fmt(d.income),'ai')}${td(fmt(d.expense),'ae')}
+      ${td(fmt(b),b>=0?'ai':'ae')}${td(e(d.notes||'—'),'ts')}
+      <td><div class="flex g1">
+        <button class="btn btn-s xs ic" onclick="openEditDr('${d.id}')">✏️</button>
+        <button class="btn btn-d xs ic" onclick="delDr('${d.id}')">🗑️</button>
+      </div></td>
+    </tr>`;
+  }).join('') : '<tr class="erow"><td colspan="9">No daily records found.</td></tr>';
+};
+
+/* ─────── RENDER INCIDENTS ─────── */
+function renderIn() {
+  const wi = fns.filter(f=>f.incident&&f.incident.trim()).length;
+  const dn = fns.filter(f=>f.status==='Completed').length;
+  $('in-t').textContent = fns.length;
+  $('in-w').textContent = wi;
+  $('in-d').textContent = dn;
+  $('in-body').innerHTML = fns.length ? fns.map(f => {
+    const hasI = f.incident && f.incident.trim();
+    return `<tr>
+      ${td('<b>'+e(f.name||'—')+'</b>')}${td(f.date||'—')}${td(bdg(f.status))}
+      ${td(hasI?`<span class="itag" title="${e(f.incident)}">${e(f.incident)}</span>`:'<span class="ts" style="font-size:.72rem">None recorded</span>')}
+      <td><button class="btn btn-s sm" onclick="openIncM('${f.id}')">📝 Update</button></td>
+    </tr>`;
+  }).join('') : '<tr class="erow"><td colspan="5">No functions yet.</td></tr>';
+}
+
+/* ─────── RENDER SUMMARY ─────── */
+const MN = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function renderSm() {
+  const yr = $('sm-yr').value; if (!yr) return;
+  const data = MN.map(m => ({ month:m, fI:0,fE:0,dI:0,dE:0 }));
+  fns.forEach(f => {
+    if ((f.date||'').startsWith(yr)) {
+      const m = parseInt(f.date.split('-')[1],10)-1;
+      if (m>=0&&m<12) { data[m].fI+=Number(f.income||0); data[m].fE+=Number(f.expense||0); }
+    }
+  });
+  drs.forEach(d => {
+    if ((d.date||'').startsWith(yr)) {
+      const m = parseInt(d.date.split('-')[1],10)-1;
+      if (m>=0&&m<12) { data[m].dI+=Number(d.income||0); data[m].dE+=Number(d.expense||0); }
+    }
+  });
+  let yI=0,yE=0,yF=0;
+  data.forEach(d=>{yI+=d.fI+d.dI;yE+=d.fE+d.dE;});
+  yF = fns.filter(f=>(f.date||'').startsWith(yr)).length;
+  $('sm-i').textContent=fmt(yI); $('sm-e').textContent=fmt(yE);
+  $('sm-b').textContent=fmt(yI-yE); $('sm-f').textContent=yF;
+
+  $('sm-body').innerHTML = data.map(d=>{
+    const tI=d.fI+d.dI,tE=d.fE+d.dE,b=tI-tE;
+    return `<tr>${td('<b>'+d.month+'</b>')}${td(fmt(d.fI),'ai')}${td(fmt(d.fE),'ae')}
+    ${td(fmt(d.dI),'ai')}${td(fmt(d.dE),'ae')}${td(fmt(tI),'ai')}${td(fmt(tE),'ae')}
+    ${td(fmt(b),b>=0?'ai':'ae')}</tr>`;
+  }).join('');
+
+  const mx = Math.max(...data.map(d=>Math.max(d.fI+d.dI,d.fE+d.dE)),1);
+  $('sm-chart').innerHTML = data.map(d=>{
+    const inc=d.fI+d.dI, exp=d.fE+d.dE;
+    return `<div class="brow">
+      <span class="blbl">${d.month}</span>
+      <div class="bgrp">
+        <div class="flex aic" style="gap:8px;margin-bottom:3px">
+          <div class="btrk"><div class="bfill gi" style="width:${(inc/mx*100).toFixed(1)}%"></div></div>
+          <span class="bval">${fmt(inc)}</span>
+        </div>
+        <div class="flex aic" style="gap:8px">
+          <div class="btrk"><div class="bfill ge" style="width:${(exp/mx*100).toFixed(1)}%"></div></div>
+          <span class="bval">${fmt(exp)}</span>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function populateYears() {
+  const y=new Date().getFullYear(), s=$('sm-yr');
+  s.innerHTML='';
+  for(let i=y;i>=y-6;i--) { const o=document.createElement('option');o.value=i;o.textContent=i;s.appendChild(o); }
+}
+
+/* ─────── RENDER ALL ─────── */
+function renderAll() {
+  renderDash(); G.renderFn(); G.renderDr(); renderIn(); renderSm();
+}
+
+/* ─────── REFRESH ─────── */
+G.refreshAll = async function() {
+  load(true,'Refreshing data…');
+  try {
+    await ensureSignedInForFirestore();
+    await fetchFns(); await fetchDrs(); renderAll(); toast('Refreshed!');
+  } catch (err) { toast('Refresh error: '+err.message,'er'); }
+  load(false);
+};
+
+/* ─────── SAVE FUNCTION ─────── */
+G.saveFn = async function() {
+  const name    = $('af-name').value.trim();
+  const date    = $('af-date').value;
+  const status  = $('af-status').value;
+  const income  = Number($('af-income').value||0);
+  const expense = Number($('af-expense').value||0);
+  const incident= $('af-incident').value.trim();
+  const imageUrl= $('af-img').value.trim();
+  const assignees = gatherAsn('af-asn');
+  if (!name||!date) { toast('Name and Date are required.','er'); return; }
+  load(true,'Saving function…');
+  try {
+    await ensureSignedInForFirestore();
+    await addDoc(collection(db,C_FN),{name,date,status,income,expense,incident,imageUrl,assignees,createdAt:new Date().toISOString()});
+    closeM('m-addFn');
+    ['af-name','af-income','af-expense','af-incident','af-img'].forEach(id=>$(id).value='');
+    $('af-status').value='Pending'; $('af-asn').innerHTML=''; $('af-box').classList.remove('show');
+    $('af-date').value = today();
+    await fetchFns(); renderAll(); toast('Function saved!');
+  } catch(err) { toast('Error: '+err.message,'er'); }
+  load(false);
+};
+
+/* ─────── OPEN EDIT FUNCTION ─────── */
+G.openEditFn = function(id) {
+  const f = fns.find(x=>x.id===id); if(!f) return;
+  $('ef-id').value=$('ef-name').value=(''); // reset first
+  $('ef-id').value       = id;
+  $('ef-name').value     = f.name     ||'';
+  $('ef-date').value     = f.date     ||'';
+  $('ef-status').value   = f.status   ||'Pending';
+  $('ef-income').value   = f.income   ||0;
+  $('ef-expense').value  = f.expense  ||0;
+  $('ef-incident').value = f.incident ||'';
+  $('ef-img').value      = f.imageUrl ||'';
+  const box=$('ef-box'),img=$('ef-pic'),err=$('ef-err');
+  if(f.imageUrl&&f.imageUrl.trim()){
+    img.src=f.imageUrl;
+    img.onload=()=>{box.classList.add('show');img.style.display='block';err.style.display='none';};
+    img.onerror=()=>{box.classList.add('show');img.style.display='none';err.style.display='flex';};
+  } else { box.classList.remove('show'); }
+  const list=$('ef-asn'); list.innerHTML='';
+  (f.assignees||[]).forEach(a=>{
+    const row=document.createElement('div'); row.className='asn-row';
+    row.innerHTML=`<input type="text" class="asn-n" value="${e(a.name||'')}"/>
+      <input type="number" class="asn-s" value="${a.spent||0}" min="0"/>
+      <button class="btn btn-d xs ic" onclick="this.parentElement.remove()">✕</button>`;
+    list.appendChild(row);
+  });
+  openM('m-editFn');
+};
+
+/* ─────── UPDATE FUNCTION ─────── */
+G.updateFn = async function() {
+  const id=$('ef-id').value;
+  const name=$('ef-name').value.trim(), date=$('ef-date').value;
+  if(!name||!date){toast('Name and Date are required.','er');return;}
+  load(true,'Updating…');
+  try {
+    await ensureSignedInForFirestore();
+    await updateDoc(doc(db,C_FN,id),{
+      name, date, status:$('ef-status').value,
+      income:Number($('ef-income').value||0), expense:Number($('ef-expense').value||0),
+      incident:$('ef-incident').value.trim(), imageUrl:$('ef-img').value.trim(),
+      assignees:gatherAsn('ef-asn'), updatedAt:new Date().toISOString()
+    });
+    closeM('m-editFn'); await fetchFns(); renderAll(); toast('Function updated!');
+  } catch(err){toast('Error: '+err.message,'er');}
+  load(false);
+};
+
+/* ─────── DELETE FUNCTION ─────── */
+G.delFn = async function(id) {
+  if(!confirm('Delete this function permanently? This cannot be undone.')) return;
+  load(true,'Deleting…');
+  try {
+    await ensureSignedInForFirestore();
+    await deleteDoc(doc(db,C_FN,id)); await fetchFns(); renderAll(); toast('Function deleted.','in');
+  }
+  catch(err){toast('Error: '+err.message,'er');}
+  load(false);
+};
+
+function dailyPayloadFromForm(prefix) {
+  const fnId = ($(prefix + '-fnId').value || '').trim();
+  let functionName = '';
+  if (fnId) {
+    const fn = fns.find(x => x.id === fnId);
+    functionName = fn ? (fn.name || '') : '';
+  }
+  const sourceCategory = $(prefix + '-source').value;
+  const sourceOther = sourceCategory === 'Other' ? $(prefix + '-sourceOther').value.trim() : '';
+  if (sourceCategory === 'Other' && !sourceOther) {
+    return { error: 'Please describe the source when "Other" is selected.' };
+  }
+  return {
+    functionId: fnId || null,
+    functionName: functionName || null,
+    sourceCategory,
+    sourceOther: sourceCategory === 'Other' ? sourceOther : null,
+    givenBy: $(prefix + '-givenBy').value.trim(),
+    notes: $(prefix + '-notes').value.trim()
+  };
+}
+
+/* ─────── SAVE DAILY RECORD ─────── */
+G.saveDr = async function() {
+  const date = $('ad-date').value;
+  if (!date) { toast('Date is required.', 'er'); return; }
+  const extra = dailyPayloadFromForm('ad');
+  if (extra.error) { toast(extra.error, 'er'); return; }
+  load(true, 'Saving record…');
+  try {
+    await ensureSignedInForFirestore();
+    await addDoc(collection(db, C_DR), {
+      date,
+      income: Number($('ad-income').value || 0),
+      expense: Number($('ad-expense').value || 0),
+      ...extra,
+      createdAt: new Date().toISOString()
+    });
+    closeM('m-addDr');
+    ['ad-income', 'ad-expense', 'ad-notes', 'ad-givenBy', 'ad-sourceOther'].forEach(id => { $(id).value = ''; });
+    $('ad-date').value = today();
+    $('ad-fnId').value = '';
+    $('ad-source').value = 'Donation box';
+    G.toggleSourceOther('ad');
+    await fetchDrs(); renderAll(); toast('Daily record saved!');
+  } catch (err) { toast('Error: ' + err.message, 'er'); }
+  load(false);
+};
+
+/* ─────── OPEN EDIT DAILY ─────── */
+G.openEditDr = function(id) {
+  const d = drs.find(x => x.id === id);
+  if (!d) return;
+  fillFnDropdowns();
+  $('ed-id').value = id;
+  $('ed-date').value = d.date || '';
+  $('ed-income').value = d.income || 0;
+  $('ed-expense').value = d.expense || 0;
+  $('ed-notes').value = d.notes || '';
+  $('ed-givenBy').value = d.givenBy || '';
+  $('ed-fnId').value = d.functionId || '';
+  const sc = d.sourceCategory && SOURCE_VALUES.includes(d.sourceCategory) ? d.sourceCategory : 'Miscellaneous';
+  $('ed-source').value = sc;
+  $('ed-sourceOther').value = d.sourceOther || '';
+  G.toggleSourceOther('ed');
+  openM('m-editDr');
+};
+
+/* ─────── UPDATE DAILY RECORD ─────── */
+G.updateDr = async function() {
+  const id = $('ed-id').value;
+  const date = $('ed-date').value;
+  if (!date) { toast('Date is required.', 'er'); return; }
+  const extra = dailyPayloadFromForm('ed');
+  if (extra.error) { toast(extra.error, 'er'); return; }
+  load(true, 'Updating record…');
+  try {
+    await ensureSignedInForFirestore();
+    await updateDoc(doc(db, C_DR, id), {
+      date,
+      income: Number($('ed-income').value || 0),
+      expense: Number($('ed-expense').value || 0),
+      ...extra,
+      updatedAt: new Date().toISOString()
+    });
+    closeM('m-editDr'); await fetchDrs(); renderAll(); toast('Record updated!');
+  } catch (err) { toast('Error: ' + err.message, 'er'); }
+  load(false);
+};
+
+/* ─────── DELETE DAILY RECORD ─────── */
+G.delDr = async function(id) {
+  if(!confirm('Delete this daily record?')) return;
+  load(true,'Deleting…');
+  try {
+    await ensureSignedInForFirestore();
+    await deleteDoc(doc(db,C_DR,id)); await fetchDrs(); renderAll(); toast('Record deleted.','in');
+  } catch(err){toast('Error: '+err.message,'er');}
+  load(false);
+};
+
+/* ─────── INCIDENT MODAL ─────── */
+G.openIncM = function(id) {
+  const f=fns.find(x=>x.id===id); if(!f) return;
+  $('ic-id').value    = id;
+  $('ic-text').value  = f.incident||'';
+  $('ic-status').value= f.status||'Pending';
+  openM('m-inc');
+};
+G.saveInc = async function() {
+  const id=$('ic-id').value;
+  load(true,'Saving incident…');
+  try {
+    await ensureSignedInForFirestore();
+    await updateDoc(doc(db,C_FN,id),{
+      incident:$('ic-text').value.trim(), status:$('ic-status').value,
+      updatedAt:new Date().toISOString()
+    });
+    closeM('m-inc'); await fetchFns(); renderAll(); toast('Incident updated!');
+  } catch(err){toast('Error: '+err.message,'er');}
+  load(false);
+};
+
+/* ─────── UTILITY ─────── */
+function today() { return new Date().toISOString().split('T')[0]; }
+
+/* ─────── BOOT + AUTH ─────── */
+populateYears();
+$('af-date').value = today();
+$('ad-date').value = today();
+
+async function loadStaffData() {
+  load(true, 'Loading data…');
+  try {
+    await ensureSignedInForFirestore();
+    await fetchFns();
+    await fetchDrs();
+    $('dbStatus').textContent = '● Firestore Connected';
+    renderAll();
+    if (!dataBooted) {
+      dataBooted = true;
+      toast('Connected — data loaded!');
+    }
+  } catch (err) {
+    $('dbStatus').textContent = 'Connection failed';
+    toast('Error: ' + err.message, 'er');
+    console.error(err);
+  }
+  load(false);
+}
+
+function showLoginScreen() {
+  $('loginGate').classList.remove('off');
+  $('hdrUser').style.display = 'none';
+  $('btnSignOut').style.display = 'none';
+  syncSettingsNav(null);
+  fns = [];
+  drs = [];
+  dataBooted = false;
+  try { renderAll(); } catch (_) {}
+}
+
+function showAppForUser(user) {
+  $('loginGate').classList.add('off');
+  $('hdrUser').style.display = '';
+  $('hdrUser').textContent = user.email || '';
+  $('btnSignOut').style.display = '';
+  syncSettingsNav(user);
+}
+
+onAuthStateChanged(auth, async user => {
+  if (!user || !isStaff(user)) {
+    lastAuthUid = null;
+    showLoginScreen();
+    if (user && !isStaff(user)) {
+      try { await signOut(auth); } catch (_) {}
+      $('loginErr').textContent = 'This account is not on the staff list.';
+      $('loginErr').classList.add('on');
+    }
+    $('dbStatus').textContent = '● Sign in required';
+    return;
+  }
+  showAppForUser(user);
+  if (lastAuthUid === user.uid) return;
+  lastAuthUid = user.uid;
+  await loadStaffData();
+});
+</script>
+</body>
+</html>
