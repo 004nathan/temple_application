@@ -186,10 +186,42 @@ textarea{resize:vertical;min-height:68px}
 .img-box{margin-top:8px;border:1.5px dashed var(--pb);border-radius:var(--rs);
   background:var(--pale);padding:9px;display:none}
 .img-box.show{display:block}
-.img-box img{width:100%;max-height:130px;object-fit:cover;border-radius:5px;display:block}
+.img-box img{width:100%;max-height:160px;object-fit:cover;border-radius:5px;display:block;cursor:zoom-in}
 .img-err{font-size:.73rem;color:var(--rd);display:none;align-items:center;
   gap:5px;margin-top:5px;padding:5px 9px;background:var(--rdb);
   border-radius:5px;border:1px solid var(--rdr)}
+
+/* ── COMPLETED UPLOADS ── */
+.complete-panel{display:none;background:var(--gnb);border:1px solid var(--gnr);
+  border-radius:var(--rs);padding:12px 12px 14px}
+.complete-panel.on{display:block}
+.complete-hint{font-size:.75rem;color:var(--tm);line-height:1.5;margin-bottom:10px}
+.upload-note{font-size:.72rem;color:var(--ts);margin-top:4px}
+.file-previews{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.file-previews:empty{display:none}
+.pv-item{position:relative;width:92px;height:92px;border-radius:8px;overflow:hidden;
+  border:1px solid var(--bd);background:#fff;flex-shrink:0}
+.pv-item img{width:100%;height:100%;object-fit:cover;display:block;cursor:zoom-in}
+.pv-x{position:absolute;top:3px;right:3px;width:20px;height:20px;border:none;border-radius:5px;
+  background:rgba(15,23,42,.72);color:#fff;font-size:.68rem;cursor:pointer;line-height:1}
+.pv-x:hover{background:var(--rd)}
+.pv-badge{position:absolute;left:3px;bottom:3px;background:rgba(15,23,42,.72);color:#fff;
+  font-size:.6rem;font-weight:600;border-radius:4px;padding:1px 4px}
+.gallery{display:flex;flex-wrap:wrap;gap:8px}
+.gallery img{width:148px;height:112px;object-fit:cover;border-radius:8px;border:1px solid var(--bd);
+  cursor:zoom-in;background:var(--bg)}
+.th-count{font-size:.65rem;color:var(--ts);margin-top:3px;line-height:1.3}
+.th{cursor:zoom-in}
+
+/* ── LIGHTBOX ── */
+.lb{display:none;position:fixed;inset:0;z-index:450;background:rgba(15,23,42,.86);
+  align-items:center;justify-content:center;padding:18px}
+.lb.on{display:flex}
+.lb img{max-width:min(980px,94vw);max-height:88vh;object-fit:contain;border-radius:12px;
+  box-shadow:var(--shl);background:#0f172a}
+.lb-x{position:absolute;top:16px;right:16px;width:36px;height:36px;border:none;border-radius:8px;
+  background:rgba(255,255,255,.16);color:#fff;font-size:1rem;cursor:pointer}
+.lb-x:hover{background:rgba(255,255,255,.28)}
 
 /* ── ASSIGNEE ROWS ── */
 .asn-list{display:flex;flex-direction:column;gap:6px;margin-top:7px}
@@ -447,6 +479,7 @@ hr{border:none;border-top:1px solid var(--bd);margin:15px 0}
   <div class="nav-wrap">
     <button class="nb on" data-tab="dashboard">📊 Dashboard</button>
     <button class="nb" data-tab="functions">🎉 Functions</button>
+    <button class="nb" data-tab="things">🪔 Temple Things</button>
     <button class="nb" data-tab="daily">📅 Daily Records</button>
     <button class="nb" data-tab="incidents">⚠️ Incidents</button>
     <button class="nb" data-tab="summary">📈 Summary</button>
@@ -467,6 +500,7 @@ hr{border:none;border-top:1px solid var(--bd);margin:15px 0}
     <div class="card c-exp"><div class="c-ico">💸</div><div class="c-lbl">Total Expense</div><div class="c-val" id="d-tE">₹0</div><div class="c-sub">Functions + Daily</div></div>
     <div class="card c-bal"><div class="c-ico">⚖️</div><div class="c-lbl">Net Balance</div><div class="c-val" id="d-bal">₹0</div><div class="c-sub">Income − Expense</div></div>
     <div class="card c-cnt"><div class="c-ico">🎉</div><div class="c-lbl">Functions</div><div class="c-val" id="d-fc">0</div><div class="c-sub" id="d-fs">0 completed</div></div>
+    <div class="card c-cnt" style="cursor:pointer" onclick="go('things')"><div class="c-ico">🪔</div><div class="c-lbl">Temple Things</div><div class="c-val" id="d-tc">0</div><div class="c-sub">Items in store</div></div>
   </div>
   <div class="tc">
     <div class="tc-hdr">
@@ -513,6 +547,29 @@ hr{border:none;border-top:1px solid var(--bd);margin:15px 0}
     <div class="t-scroll">
       <table><thead><tr><th>Image</th><th>Function Name</th><th>Date</th><th>Status</th><th>Income</th><th>Expense</th><th>Balance</th><th>Assignees</th><th>Incident</th><th>Actions</th></tr></thead>
       <tbody id="fn-body"><tr class="erow"><td colspan="10">Loading…</td></tr></tbody></table>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ TEMPLE THINGS ═══════════════ -->
+<section class="sec" id="tab-things">
+  <div class="sec-hdr">
+    <div class="sec-ttl">🪔 Temple Things <span class="ttl-bar"></span></div>
+    <button class="btn btn-p" onclick="openAddItem()">➕ Add Thing</button>
+  </div>
+  <div class="filters">
+    <input type="text" id="it-q" placeholder="Search things…" oninput="renderItems()" style="min-width:180px;max-width:260px;padding:6px 10px;border:1.5px solid var(--bds);border-radius:var(--rs);font-size:.81rem"/>
+    <button class="btn btn-s sm" onclick="$('it-q').value='';renderItems()">✕ Clear</button>
+  </div>
+  <div class="cards">
+    <div class="card c-cnt"><div class="c-ico">🪔</div><div class="c-lbl">Kinds of things</div><div class="c-val" id="it-kinds">0</div></div>
+    <div class="card c-bal"><div class="c-ico">🔢</div><div class="c-lbl">Total count</div><div class="c-val" id="it-sum">0</div><div class="c-sub">All items added together</div></div>
+  </div>
+  <div class="tc">
+    <div class="tc-hdr"><span class="tc-ttl">Store</span><span class="tc-meta" id="it-cnt"></span></div>
+    <div class="t-scroll">
+      <table><thead><tr><th>Photo</th><th>Thing</th><th>Count</th><th>Actions</th></tr></thead>
+      <tbody id="it-body"><tr class="erow"><td colspan="4">Loading…</td></tr></tbody></table>
     </div>
   </div>
 </section>
@@ -618,8 +675,8 @@ hr{border:none;border-top:1px solid var(--bd);margin:15px 0}
     <div class="card c-cnt">
       <div class="c-ico">📦</div>
       <div class="c-lbl">Collections</div>
-      <div class="c-val" style="font-size:1rem">2</div>
-      <div class="c-sub">functions · dailyRecords</div>
+      <div class="c-val" style="font-size:1rem">3</div>
+      <div class="c-sub">functions · dailyRecords · templeItems</div>
     </div>
   </div>
 
@@ -665,11 +722,36 @@ service cloud.firestore {
     match /dailyRecords/{id} {
       allow read, create, update, delete: if request.auth != null;
     }
+    match /templeItems/{id} {
+      allow read, create, update, delete: if request.auth != null;
+    }
   }
 }</pre>
         </div>
         <p style="font-size:.73rem;color:var(--ts);margin-top:6px">✅ Only signed-in users can read or write. Enable <strong>Authentication → Email/Password</strong> in Firebase Console and add staff users.</p>
         <p style="font-size:.73rem;color:#B45309;background:#FFFBEB;border:1px solid #FDE68A;border-radius:var(--rs);padding:10px 12px;margin-top:10px;line-height:1.55"><strong>Updates show “Missing or insufficient permissions”?</strong> In the Firebase Console → Firestore → Rules, make sure writes use <code style="font-size:.72rem;background:rgba(0,0,0,.06);padding:1px 5px;border-radius:3px">request.auth != null</code> (signed-in <em>allowed</em>). An older template used <code style="font-size:.72rem">request.auth == null</code>, which <em>blocks</em> signed-in staff from saving. Copy the rules above exactly and click <strong>Publish</strong>.</p>
+      </div>
+
+      <div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+          <span style="background:#EFF6FF;color:#1D4ED8;border:1px solid #BFDBFE;border-radius:999px;padding:2px 10px;font-size:.7rem;font-weight:600">STORAGE RULES</span>
+          <span style="font-size:.78rem;color:var(--ts)">Needed for temple photos, bills, and thing photos</span>
+        </div>
+        <div style="background:var(--bg);border:1px solid var(--bd);border-radius:var(--rs);padding:13px 15px;font-family:monospace;font-size:.78rem;line-height:1.9;color:var(--tx);position:relative">
+          <button onclick="copyRule('rule-storage')" style="position:absolute;top:8px;right:8px;background:var(--sf);border:1px solid var(--bds);border-radius:5px;padding:3px 9px;font-size:.72rem;cursor:pointer;color:var(--tm)">Copy</button>
+          <pre id="rule-storage" style="margin:0;white-space:pre-wrap">rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /functions/{fnId}/{allPaths=**} {
+      allow read, write: if request.auth != null;
+    }
+    match /templeItems/{itemId}/{allPaths=**} {
+      allow read, write: if request.auth != null;
+    }
+  }
+}</pre>
+        </div>
+        <p style="font-size:.73rem;color:var(--ts);margin-top:6px">Firebase Console → Storage → Rules → paste → Publish. Also open Storage once so the bucket is created.</p>
       </div>
 
       <!-- How to apply -->
@@ -860,15 +942,27 @@ service cloud.firestore {
         <div class="fgrp full"><label>Function Name *</label><input type="text" id="af-name" placeholder="e.g. Aadi Festival, Karthigai Deepam…"/></div>
         <div class="fgrp"><label>Date *</label><input type="date" id="af-date"/></div>
         <div class="fgrp"><label>Status</label>
-          <select id="af-status"><option value="Pending">⏳ Pending</option><option value="Ongoing">🔄 Ongoing</option><option value="Completed">✅ Completed</option></select>
+          <select id="af-status" onchange="syncCompleteUploads('af')"><option value="Pending">⏳ Pending</option><option value="Ongoing">🔄 Ongoing</option><option value="Completed">✅ Completed</option></select>
         </div>
         <div class="fgrp"><label>Income (₹)</label><input type="number" id="af-income" placeholder="0" min="0"/></div>
         <div class="fgrp"><label>Expense (₹)</label><input type="number" id="af-expense" placeholder="0" min="0"/></div>
         <div class="fgrp full"><label>Incident / Notes</label><textarea id="af-incident" placeholder="Crowd notes, special observations, incidents…"></textarea></div>
         <div class="fgrp full">
-          <label>🖼️ Image URL <span style="text-transform:none;font-weight:400;color:var(--ts)">(Cloudinary / any direct link)</span></label>
-          <input type="text" id="af-img" placeholder="https://example.com/photo.jpg" oninput="prevImg('af-img','af-box','af-pic','af-err')"/>
-          <div class="img-box" id="af-box"><img id="af-pic" src="" alt=""/><p class="img-err" id="af-err">⚠️ Cannot load — check URL</p></div>
+          <div class="complete-panel" id="af-complete">
+            <p class="complete-hint">This function is completed. Upload temple images and bill photos. Every image previews below before you save.</p>
+            <div class="fgrp">
+              <label>Temple images</label>
+              <input type="file" id="af-templeFiles" accept="image/*" multiple onchange="onPickFiles('af','temple')"/>
+              <p class="upload-note">Upload file — one or more photos.</p>
+              <div class="file-previews" id="af-templePrev"></div>
+            </div>
+            <div class="fgrp" style="margin-top:10px">
+              <label>Bills</label>
+              <input type="file" id="af-billFiles" accept="image/*" multiple onchange="onPickFiles('af','bills')"/>
+              <p class="upload-note">Upload file — photos of bills.</p>
+              <div class="file-previews" id="af-billPrev"></div>
+            </div>
+          </div>
         </div>
       </div>
       <hr/>
@@ -894,15 +988,27 @@ service cloud.firestore {
         <div class="fgrp full"><label>Function Name *</label><input type="text" id="ef-name"/></div>
         <div class="fgrp"><label>Date *</label><input type="date" id="ef-date"/></div>
         <div class="fgrp"><label>Status</label>
-          <select id="ef-status"><option value="Pending">⏳ Pending</option><option value="Ongoing">🔄 Ongoing</option><option value="Completed">✅ Completed</option></select>
+          <select id="ef-status" onchange="syncCompleteUploads('ef')"><option value="Pending">⏳ Pending</option><option value="Ongoing">🔄 Ongoing</option><option value="Completed">✅ Completed</option></select>
         </div>
         <div class="fgrp"><label>Income (₹)</label><input type="number" id="ef-income" min="0"/></div>
         <div class="fgrp"><label>Expense (₹)</label><input type="number" id="ef-expense" min="0"/></div>
         <div class="fgrp full"><label>Incident / Notes</label><textarea id="ef-incident"></textarea></div>
         <div class="fgrp full">
-          <label>🖼️ Image URL</label>
-          <input type="text" id="ef-img" placeholder="https://…" oninput="prevImg('ef-img','ef-box','ef-pic','ef-err')"/>
-          <div class="img-box" id="ef-box"><img id="ef-pic" src="" alt=""/><p class="img-err" id="ef-err">⚠️ Cannot load — check URL</p></div>
+          <div class="complete-panel" id="ef-complete">
+            <p class="complete-hint">Completed function. Upload temple images and bill photos. Saved images stay here — remove one with ✕, or add more files. Click a photo to preview it larger.</p>
+            <div class="fgrp">
+              <label>Temple images</label>
+              <input type="file" id="ef-templeFiles" accept="image/*" multiple onchange="onPickFiles('ef','temple')"/>
+              <p class="upload-note">Upload file — one or more photos.</p>
+              <div class="file-previews" id="ef-templePrev"></div>
+            </div>
+            <div class="fgrp" style="margin-top:10px">
+              <label>Bills</label>
+              <input type="file" id="ef-billFiles" accept="image/*" multiple onchange="onPickFiles('ef','bills')"/>
+              <p class="upload-note">Upload file — photos of bills.</p>
+              <div class="file-previews" id="ef-billPrev"></div>
+            </div>
+          </div>
         </div>
       </div>
       <hr/>
@@ -1011,7 +1117,22 @@ service cloud.firestore {
       <input type="hidden" id="ic-id"/>
       <div class="fgrp"><label>Incident Details</label><textarea id="ic-text" rows="5" placeholder="Describe what happened…"></textarea></div>
       <div class="fgrp mt4"><label>Function Status</label>
-        <select id="ic-status"><option value="Pending">⏳ Pending</option><option value="Ongoing">🔄 Ongoing</option><option value="Completed">✅ Completed</option></select>
+        <select id="ic-status" onchange="syncCompleteUploads('ic')"><option value="Pending">⏳ Pending</option><option value="Ongoing">🔄 Ongoing</option><option value="Completed">✅ Completed</option></select>
+      </div>
+      <div class="complete-panel mt4" id="ic-complete">
+        <p class="complete-hint">Completed function. Upload temple images and bill photos here. Already saved photos are shown for preview.</p>
+        <div class="fgrp">
+          <label>Temple images</label>
+          <input type="file" id="ic-templeFiles" accept="image/*" multiple onchange="onPickFiles('ic','temple')"/>
+          <p class="upload-note">Upload file — one or more photos.</p>
+          <div class="file-previews" id="ic-templePrev"></div>
+        </div>
+        <div class="fgrp" style="margin-top:10px">
+          <label>Bills</label>
+          <input type="file" id="ic-billFiles" accept="image/*" multiple onchange="onPickFiles('ic','bills')"/>
+          <p class="upload-note">Upload file — photos of bills.</p>
+          <div class="file-previews" id="ic-billPrev"></div>
+        </div>
       </div>
     </div>
     <div class="m-foot">
@@ -1019,6 +1140,59 @@ service cloud.firestore {
       <button class="btn btn-p sm" onclick="saveInc()">✅ Save Report</button>
     </div>
   </div>
+</div>
+
+<!-- Add Temple Thing -->
+<div class="ovl" id="m-addItem">
+  <div class="modal">
+    <div class="m-hdr"><span class="m-ttl">🪔 Add Temple Thing</span><button class="m-x" onclick="closeM('m-addItem')">✕</button></div>
+    <div class="m-body">
+      <div class="fg">
+        <div class="fgrp full"><label>Thing *</label><input type="text" id="ai-name" placeholder="e.g. Brass lamp, Chair, Microphone…"/></div>
+        <div class="fgrp full"><label>Count *</label><input type="number" id="ai-count" placeholder="0" min="0" step="1"/></div>
+        <div class="fgrp full">
+          <label>Photo</label>
+          <input type="file" id="ai-photo" accept="image/*" onchange="onItemPhoto('ai')"/>
+          <p class="upload-note">Upload file — the photo previews below.</p>
+          <div class="img-box" id="ai-box"><img id="ai-pic" src="" alt="Thing photo"/></div>
+        </div>
+      </div>
+    </div>
+    <div class="m-foot">
+      <button class="btn btn-s sm" onclick="closeM('m-addItem')">Cancel</button>
+      <button class="btn btn-p sm" onclick="saveItem()">💾 Save Thing</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Temple Thing -->
+<div class="ovl" id="m-editItem">
+  <div class="modal">
+    <div class="m-hdr"><span class="m-ttl">✏️ Edit Temple Thing</span><button class="m-x" onclick="closeM('m-editItem')">✕</button></div>
+    <div class="m-body">
+      <input type="hidden" id="ei-id"/>
+      <div class="fg">
+        <div class="fgrp full"><label>Thing *</label><input type="text" id="ei-name"/></div>
+        <div class="fgrp full"><label>Count *</label><input type="number" id="ei-count" min="0" step="1"/></div>
+        <div class="fgrp full">
+          <label>Photo</label>
+          <input type="file" id="ei-photo" accept="image/*" onchange="onItemPhoto('ei')"/>
+          <p class="upload-note">Upload file to replace the photo. Click the preview to see it larger.</p>
+          <div class="img-box" id="ei-box"><img id="ei-pic" src="" alt="Thing photo"/></div>
+          <button type="button" class="btn btn-s xs mt3" id="ei-clearPhoto" onclick="clearItemPhoto('ei')">Remove photo</button>
+        </div>
+      </div>
+    </div>
+    <div class="m-foot">
+      <button class="btn btn-s sm" onclick="closeM('m-editItem')">Cancel</button>
+      <button class="btn btn-p sm" onclick="updateItem()">✅ Update</button>
+    </div>
+  </div>
+</div>
+
+<div class="lb" id="lightbox" onclick="if(event.target===this)closeLightbox()">
+  <button type="button" class="lb-x" onclick="closeLightbox()">✕</button>
+  <img id="lb-img" alt="Preview"/>
 </div>
 
 <!-- ══════════════════════════════════
@@ -1035,6 +1209,9 @@ import {
   getFirestore, collection, addDoc, getDocs, doc,
   updateDoc, deleteDoc, query, orderBy
 } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+import {
+  getStorage, ref as storageRef, uploadBytes, getDownloadURL, deleteObject
+} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js';
 
 /* ─── Config ─── */
 const CFG = {
@@ -1055,17 +1232,27 @@ const SETTINGS_ADMIN_EMAIL = 'parvathinathanbala@gmail.com';
 const app  = initializeApp(CFG);
 const db   = getFirestore(app);
 const auth = getAuth(app);
+const storage = getStorage(app);
 
 /* ─── Collections ─── */
 const C_FN = 'functions';
 const C_DR = 'dailyRecords';
+const C_IT = 'templeItems';
 
 const SOURCE_VALUES = ['Donation box','Pooja fees','Piggy bank','Hundi','Prasad / sales','Miscellaneous','Other'];
 
 /* ─── State ─── */
 let fns = [];
 let drs = [];
+let items = [];
 let dataBooted = false;
+
+const fileState = {
+  af: blankFiles(),
+  ef: blankFiles(),
+  ic: blankFiles()
+};
+const itemPhoto = { ai: null, ei: null };
 let lastAuthUid = null;
 
 /* ─── Expose helpers to global so onclick="" works ─── */
@@ -1207,6 +1394,19 @@ function load(on, msg) {
   if (msg) $('loaderMsg').textContent = msg;
 }
 
+G.copyRule = function(id) {
+  const text = ($(id) && $(id).innerText) || '';
+  if (!text) { toast('Nothing to copy.', 'er'); return; }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(
+      () => toast('Rules copied.'),
+      () => toast('Select the rules and copy them manually.', 'er')
+    );
+  } else {
+    toast('Select the rules and copy them manually.', 'er');
+  }
+};
+
 /* ── Toast ── */
 G.toast = function(msg, type) {
   type = type || 'ok';
@@ -1223,8 +1423,10 @@ G.closeM = id => $(id).classList.remove('on');
 document.querySelectorAll('.ovl').forEach(o =>
   o.addEventListener('click', e => { if (e.target===o) o.classList.remove('on'); }));
 document.addEventListener('keydown', e => {
-  if (e.key==='Escape') document.querySelectorAll('.ovl.on')
-    .forEach(o => o.classList.remove('on'));
+  if (e.key==='Escape') {
+    document.querySelectorAll('.ovl.on').forEach(o => o.classList.remove('on'));
+    G.closeLightbox();
+  }
 });
 
 /* ── Tab switch ── */
@@ -1253,19 +1455,318 @@ function bdg(s) {
 
 /* ── Thumb ── */
 function th(url) {
-  return url && url.trim()
-    ? `<img class="th" src="${e(url)}" alt="" loading="lazy" onerror="this.outerHTML='<div class=th-ph>🛕</div>'">`
+  return url && String(url).trim()
+    ? `<img class="th" src="${e(url)}" alt="" loading="lazy" onclick="openLightbox(this.src)" onerror="this.outerHTML='<div class=th-ph>🛕</div>'">`
     : '<div class="th-ph">🛕</div>';
 }
 
-/* ── Image live preview ── */
-G.prevImg = function(iId, bId, pId, eId) {
-  const url = $(iId).value.trim();
-  const box=$(bId), img=$(pId), err=$(eId);
-  if (!url) { box.classList.remove('show'); return; }
-  img.src = url;
-  img.onload  = () => { box.classList.add('show'); img.style.display='block'; err.style.display='none'; };
-  img.onerror = () => { box.classList.add('show'); img.style.display='none'; err.style.display='flex'; };
+function blankFiles() {
+  return { temple: [], bills: [], keptTemple: [], keptBills: [], legacyUrl: '', originalImageUrl: '', clearLegacy: false, removedPaths: [], lockKept: false };
+}
+
+function templePhotoList(f) {
+  const out = [];
+  const seen = new Set();
+  const push = (url, name) => {
+    const u = String(url || '').trim();
+    if (!u || seen.has(u)) return;
+    seen.add(u);
+    out.push({ url: u, name: name || 'Photo' });
+  };
+  (Array.isArray(f.templeImages) ? f.templeImages : []).forEach(x => push(x && x.url, x && x.name));
+  push(f.imageUrl, 'Photo');
+  return out;
+}
+
+function billList(f) {
+  return (Array.isArray(f.bills) ? f.bills : []).filter(x => x && x.url).map(x => ({
+    url: x.url, name: x.name || 'Bill', path: x.path || ''
+  }));
+}
+
+function fnThumbCell(f) {
+  const photos = templePhotoList(f);
+  const bills = billList(f);
+  const main = photos.length ? th(photos[0].url) : '<div class="th-ph">🛕</div>';
+  const bits = [];
+  if (photos.length) bits.push(photos.length + (photos.length === 1 ? ' photo' : ' photos'));
+  if (bills.length) bits.push(bills.length + (bills.length === 1 ? ' bill' : ' bills'));
+  return '<div>' + main + (bits.length ? '<div class="th-count">' + bits.join(' · ') + '</div>' : '') + '</div>';
+}
+
+function galleryHtml(list, emptyText) {
+  if (!list.length) return '<p class="ts" style="font-size:.82rem">' + emptyText + '</p>';
+  return '<div class="gallery">' + list.map(x =>
+    '<img src="' + e(x.url) + '" alt="' + e(x.name || '') + '" loading="lazy" onclick="openLightbox(this.src)" onerror="this.outerHTML=\'<div class=&quot;th-ph&quot;>🛕</div>\'"/>'
+  ).join('') + '</div>';
+}
+
+G.openLightbox = function(src) {
+  if (!src) return;
+  $('lb-img').src = src;
+  $('lightbox').classList.add('on');
+};
+G.closeLightbox = function() {
+  $('lightbox').classList.remove('on');
+  $('lb-img').removeAttribute('src');
+};
+
+G.syncCompleteUploads = function(prefix) {
+  const panel = $(prefix + '-complete');
+  const statusEl = $(prefix + '-status');
+  if (!panel || !statusEl) return;
+  panel.classList.toggle('on', statusEl.value === 'Completed');
+};
+
+function paintPreviews(containerId, entries) {
+  const box = $(containerId);
+  if (!box) return;
+  box.innerHTML = '';
+  entries.forEach(entry => {
+    const item = document.createElement('div');
+    item.className = 'pv-item';
+    const img = document.createElement('img');
+    img.src = entry.url;
+    img.alt = entry.name || 'Preview';
+    img.title = entry.name || 'Preview';
+    img.onclick = () => G.openLightbox(entry.url);
+    item.appendChild(img);
+    if (entry.badge) {
+      const badge = document.createElement('span');
+      badge.className = 'pv-badge';
+      badge.textContent = entry.badge;
+      item.appendChild(badge);
+    }
+    if (entry.onRemove) {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'pv-x';
+      btn.title = 'Remove';
+      btn.textContent = '✕';
+      btn.onclick = ev => { ev.stopPropagation(); entry.onRemove(); };
+      item.appendChild(btn);
+    }
+    box.appendChild(item);
+  });
+}
+
+function refreshFilePreviews(prefix) {
+  const st = fileState[prefix];
+  if (!st) return;
+  const templeEntries = [];
+  if (st.legacyUrl) {
+    templeEntries.push({
+      url: st.legacyUrl,
+      name: 'Saved photo',
+      badge: 'Saved',
+      onRemove: st.lockKept ? null : () => {
+        st.legacyUrl = '';
+        st.clearLegacy = true;
+        refreshFilePreviews(prefix);
+      }
+    });
+  }
+  (st.keptTemple || []).forEach((img, i) => {
+    templeEntries.push({
+      url: img.url,
+      name: img.name,
+      badge: 'Saved',
+      onRemove: st.lockKept ? null : () => {
+        const removed = st.keptTemple.splice(i, 1)[0];
+        if (removed && removed.path) st.removedPaths.push(removed.path);
+        if (removed && st.originalImageUrl && removed.url === st.originalImageUrl) {
+          st.clearLegacy = true;
+          st.legacyUrl = '';
+        }
+        refreshFilePreviews(prefix);
+      }
+    });
+  });
+  st.temple.forEach((img, i) => {
+    templeEntries.push({
+      url: img.url,
+      name: img.name,
+      onRemove: () => {
+        URL.revokeObjectURL(st.temple[i].url);
+        st.temple.splice(i, 1);
+        refreshFilePreviews(prefix);
+      }
+    });
+  });
+  const billEntries = [];
+  (st.keptBills || []).forEach((img, i) => {
+    billEntries.push({
+      url: img.url,
+      name: img.name,
+      badge: 'Saved',
+      onRemove: st.lockKept ? null : () => {
+        const removed = st.keptBills.splice(i, 1)[0];
+        if (removed && removed.path) st.removedPaths.push(removed.path);
+        refreshFilePreviews(prefix);
+      }
+    });
+  });
+  st.bills.forEach((img, i) => {
+    billEntries.push({
+      url: img.url,
+      name: img.name,
+      onRemove: () => {
+        URL.revokeObjectURL(st.bills[i].url);
+        st.bills.splice(i, 1);
+        refreshFilePreviews(prefix);
+      }
+    });
+  });
+  paintPreviews(prefix + '-templePrev', templeEntries);
+  paintPreviews(prefix + '-billPrev', billEntries);
+}
+
+function releasePicked(st) {
+  st.temple.forEach(x => URL.revokeObjectURL(x.url));
+  st.bills.forEach(x => URL.revokeObjectURL(x.url));
+  st.temple = [];
+  st.bills = [];
+}
+
+function resetFileState(prefix) {
+  const st = fileState[prefix];
+  releasePicked(st);
+  st.keptTemple = [];
+  st.keptBills = [];
+  st.legacyUrl = '';
+  st.originalImageUrl = '';
+  st.clearLegacy = false;
+  st.removedPaths = [];
+  st.lockKept = false;
+  const t = $(prefix + '-templeFiles');
+  const b = $(prefix + '-billFiles');
+  if (t) t.value = '';
+  if (b) b.value = '';
+  refreshFilePreviews(prefix);
+}
+
+function loadFnFilesInto(prefix, f, lockKept) {
+  const st = fileState[prefix];
+  releasePicked(st);
+  st.keptTemple = (Array.isArray(f.templeImages) ? f.templeImages : [])
+    .filter(x => x && x.url)
+    .map(x => ({ url: x.url, name: x.name || 'Photo', path: x.path || '' }));
+  st.keptBills = billList(f);
+  const legacy = String(f.imageUrl || '').trim();
+  st.originalImageUrl = legacy;
+  st.legacyUrl = legacy && !st.keptTemple.some(x => x.url === legacy) ? legacy : '';
+  st.clearLegacy = false;
+  st.removedPaths = [];
+  st.lockKept = !!lockKept;
+  const t = $(prefix + '-templeFiles');
+  const b = $(prefix + '-billFiles');
+  if (t) t.value = '';
+  if (b) b.value = '';
+  refreshFilePreviews(prefix);
+}
+
+G.onPickFiles = function(prefix, kind) {
+  const input = $(prefix + (kind === 'temple' ? '-templeFiles' : '-billFiles'));
+  const st = fileState[prefix];
+  const bucket = kind === 'temple' ? st.temple : st.bills;
+  [...input.files].forEach(file => {
+    if (!file.type || !file.type.startsWith('image/')) {
+      toast('Please choose image files only.', 'er');
+      return;
+    }
+    if (file.size > 15 * 1024 * 1024) {
+      toast(file.name + ' is larger than 15 MB.', 'er');
+      return;
+    }
+    bucket.push({ file, url: URL.createObjectURL(file), name: file.name });
+  });
+  input.value = '';
+  refreshFilePreviews(prefix);
+};
+
+function friendlyUploadError(err) {
+  const code = String((err && err.code) || '');
+  const msg = String((err && err.message) || '');
+  if (code.indexOf('storage') !== -1 || msg.toLowerCase().indexOf('storage') !== -1 || code === 'storage/unauthorized') {
+    return 'Could not upload. In Firebase Console, open Storage once, then publish the Storage rules from Settings.';
+  }
+  return msg || 'Upload failed';
+}
+
+function compressImage(file) {
+  return createImageBitmap(file, { imageOrientation: 'from-image' }).catch(() => createImageBitmap(file))
+    .then(bitmap => new Promise((resolve, reject) => {
+      const maxSide = 1600;
+      const scale = Math.min(1, maxSide / Math.max(bitmap.width, bitmap.height));
+      const w = Math.max(1, Math.round(bitmap.width * scale));
+      const h = Math.max(1, Math.round(bitmap.height * scale));
+      const canvas = document.createElement('canvas');
+      canvas.width = w;
+      canvas.height = h;
+      canvas.getContext('2d').drawImage(bitmap, 0, 0, w, h);
+      if (bitmap.close) bitmap.close();
+      canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error('Could not prepare image')), 'image/jpeg', 0.76);
+    }));
+}
+
+async function uploadImageFile(folder, file) {
+  const blob = await compressImage(file);
+  const path = folder + '/' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8) + '.jpg';
+  const r = storageRef(storage, path);
+  await uploadBytes(r, blob, { contentType: 'image/jpeg' });
+  const url = await getDownloadURL(r);
+  return { name: file.name, url, path };
+}
+
+async function uploadGroup(folder, picks) {
+  const out = [];
+  for (const pick of picks) out.push(await uploadImageFile(folder, pick.file));
+  return out;
+}
+
+function storedImage(x) {
+  return { name: x.name || 'Photo', url: x.url, path: x.path || '' };
+}
+
+async function removeStoragePaths(paths) {
+  const uniq = [...new Set((paths || []).filter(Boolean))];
+  await Promise.all(uniq.map(p => deleteObject(storageRef(storage, p)).catch(() => {})));
+}
+
+function showPhotoBox(prefix, src) {
+  const box = $(prefix + '-box');
+  const img = $(prefix + '-pic');
+  if (!src) {
+    box.classList.remove('show');
+    img.removeAttribute('src');
+    img.onclick = null;
+    return;
+  }
+  img.src = src;
+  img.onclick = () => G.openLightbox(src);
+  box.classList.add('show');
+  const clearBtn = $(prefix + '-clearPhoto');
+  if (clearBtn) clearBtn.style.display = src ? '' : 'none';
+}
+
+G.onItemPhoto = function(prefix) {
+  const input = $(prefix + '-photo');
+  const file = input.files && input.files[0];
+  input.value = '';
+  if (!file) return;
+  if (!file.type || !file.type.startsWith('image/')) { toast('Please choose an image file.', 'er'); return; }
+  if (file.size > 15 * 1024 * 1024) { toast(file.name + ' is larger than 15 MB.', 'er'); return; }
+  if (itemPhoto[prefix] && itemPhoto[prefix].url && itemPhoto[prefix].file) URL.revokeObjectURL(itemPhoto[prefix].url);
+  const url = URL.createObjectURL(file);
+  itemPhoto[prefix] = Object.assign({}, itemPhoto[prefix], { file, url });
+  showPhotoBox(prefix, url);
+};
+
+G.clearItemPhoto = function(prefix) {
+  const cur = itemPhoto[prefix];
+  if (cur && cur.file && cur.url) URL.revokeObjectURL(cur.url);
+  itemPhoto[prefix] = { file: null, url: '', existingPath: cur ? cur.existingPath : '', removeExisting: true };
+  showPhotoBox(prefix, '');
 };
 
 /* ── Assignee rows ── */
@@ -1310,6 +1811,24 @@ async function fetchDrs() {
     drs.sort((a,b) => (b.date||'').localeCompare(a.date||''));
   }
 }
+async function fetchItems() {
+  try {
+    const snap = await getDocs(query(collection(db, C_IT), orderBy('name')));
+    items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  } catch {
+    const snap = await getDocs(collection(db, C_IT));
+    items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    items.sort((a,b) => (a.name||'').localeCompare(b.name||''));
+  }
+}
+async function fetchItemsSafe() {
+  try { await fetchItems(); }
+  catch (err) {
+    console.error(err);
+    items = [];
+    toast('Temple things could not load. Publish the templeItems rule from Settings.', 'er');
+  }
+}
 
 /* ─────── RENDER DASHBOARD ─────── */
 function renderDash() {
@@ -1323,11 +1842,12 @@ function renderDash() {
   $('d-bal').textContent = fmt(tI-tE);
   $('d-fc').textContent  = fns.length;
   $('d-fs').textContent  = fns.filter(f=>f.status==='Completed').length + ' completed';
+  $('d-tc').textContent  = items.length;
 
   const r5 = fns.slice(0,5);
   $('d-fBody').innerHTML = r5.length ? r5.map(f => {
     const b = Number(f.income||0)-Number(f.expense||0);
-    return `<tr>${td(th(f.imageUrl))}${td('<b>'+e(f.name||'—')+'</b>')}${td(f.date||'—')}${td(bdg(f.status))}
+    return `<tr>${td(fnThumbCell(f))}${td('<b>'+e(f.name||'—')+'</b>')}${td(f.date||'—')}${td(bdg(f.status))}
     ${td(fmt(f.income),'ai')}${td(fmt(f.expense),'ae')}${td(fmt(b),b>=0?'ai':'ae')}</tr>`;
   }).join('') : '<tr class="erow"><td colspan="7">No functions yet.</td></tr>';
 
@@ -1354,7 +1874,7 @@ G.renderFn = function() {
     const b   = Number(f.income||0)-Number(f.expense||0);
     const hasI = f.incident && f.incident.trim();
     return `<tr>
-      ${td(th(f.imageUrl))}
+      ${td(fnThumbCell(f))}
       ${td('<span class="fn-link" onclick="openViewFn(\''+f.id+'\')">'+e(f.name||'—')+'</span>')}
       ${td(f.date||'—')}
       ${td(bdg(f.status))}
@@ -1384,17 +1904,22 @@ G.openViewFn = function(id) {
   const inc = f.incident && String(f.incident).trim();
   $('vf-body').innerHTML = `
     <div class="dv-grid">
-      <div class="dv-box full" style="display:flex;gap:14px;align-items:flex-start">
-        ${f.imageUrl ? '<div>'+th(f.imageUrl)+'</div>' : ''}
-        <div style="flex:1;min-width:0">
-          <div class="dv-lbl">Function</div>
-          <div style="font-size:1.15rem;font-weight:800">${e(f.name||'—')}</div>
-          <div class="ts" style="margin-top:4px">${e(f.date||'—')} · ${bdg(f.status)}</div>
-        </div>
+      <div class="dv-box full">
+        <div class="dv-lbl">Function</div>
+        <div style="font-size:1.15rem;font-weight:800">${e(f.name||'—')}</div>
+        <div class="ts" style="margin-top:4px">${e(f.date||'—')} · ${bdg(f.status)}</div>
       </div>
       <div class="dv-box"><div class="dv-lbl">Income</div><div class="dv-val ai">${fmt(f.income)}</div></div>
       <div class="dv-box"><div class="dv-lbl">Expense</div><div class="dv-val ae">${fmt(f.expense)}</div></div>
       <div class="dv-box full"><div class="dv-lbl">Net balance</div><div class="dv-val" style="color:${b>=0?'var(--gn)':'var(--rd)'}">${fmt(b)}</div></div>
+      <div class="dv-box full">
+        <div class="dv-lbl">Temple images</div>
+        ${galleryHtml(templePhotoList(f), 'No temple images yet.')}
+      </div>
+      <div class="dv-box full">
+        <div class="dv-lbl">Bills</div>
+        ${galleryHtml(billList(f), 'No bills yet.')}
+      </div>
       <div class="dv-box full">
         <div class="dv-lbl">Assignees</div>
         ${asnTable}
@@ -1506,7 +2031,7 @@ function populateYears() {
 
 /* ─────── RENDER ALL ─────── */
 function renderAll() {
-  renderDash(); G.renderFn(); G.renderDr(); renderIn(); renderSm();
+  renderDash(); G.renderFn(); G.renderItems(); G.renderDr(); renderIn(); renderSm();
 }
 
 /* ─────── REFRESH ─────── */
@@ -1514,7 +2039,9 @@ G.refreshAll = async function() {
   load(true,'Refreshing data…');
   try {
     await ensureSignedInForFirestore();
-    await fetchFns(); await fetchDrs(); renderAll(); toast('Refreshed!');
+    await fetchFns(); await fetchDrs();
+    await fetchItemsSafe();
+    renderAll(); toast('Refreshed!');
   } catch (err) { toast('Refresh error: '+err.message,'er'); }
   load(false);
 };
@@ -1527,18 +2054,32 @@ G.saveFn = async function() {
   const income  = Number($('af-income').value||0);
   const expense = Number($('af-expense').value||0);
   const incident= $('af-incident').value.trim();
-  const imageUrl= $('af-img').value.trim();
   const assignees = gatherAsn('af-asn');
   if (!name||!date) { toast('Name and Date are required.','er'); return; }
-  load(true,'Saving function…');
+  const pendingTemple = fileState.af.temple.slice();
+  const pendingBills = fileState.af.bills.slice();
+  load(true, status==='Completed' && (pendingTemple.length || pendingBills.length) ? 'Saving function and uploading files…' : 'Saving function…');
   try {
     await ensureSignedInForFirestore();
-    await addDoc(collection(db,C_FN),{name,date,status,income,expense,incident,imageUrl,assignees,createdAt:new Date().toISOString()});
+    const refDoc = await addDoc(collection(db,C_FN),{name,date,status,income,expense,incident,assignees,templeImages:[],bills:[],createdAt:new Date().toISOString()});
+    let uploadWarn = '';
+    if (status === 'Completed' && (pendingTemple.length || pendingBills.length)) {
+      try {
+        const templeImages = await uploadGroup('functions/' + refDoc.id + '/images', pendingTemple);
+        const bills = await uploadGroup('functions/' + refDoc.id + '/bills', pendingBills);
+        await updateDoc(refDoc, { templeImages, bills });
+      } catch (upErr) {
+        uploadWarn = ' Function saved, but files could not upload. ' + friendlyUploadError(upErr);
+      }
+    }
     closeM('m-addFn');
-    ['af-name','af-income','af-expense','af-incident','af-img'].forEach(id=>$(id).value='');
-    $('af-status').value='Pending'; $('af-asn').innerHTML=''; $('af-box').classList.remove('show');
+    ['af-name','af-income','af-expense','af-incident'].forEach(id=>$(id).value='');
+    $('af-status').value='Pending'; $('af-asn').innerHTML='';
+    resetFileState('af');
+    G.syncCompleteUploads('af');
     $('af-date').value = today();
-    await fetchFns(); renderAll(); toast('Function saved!');
+    await fetchFns(); renderAll();
+    toast(uploadWarn ? uploadWarn : 'Function saved!', uploadWarn ? 'er' : 'ok');
   } catch(err) { toast('Error: '+err.message,'er'); }
   load(false);
 };
@@ -1554,13 +2095,8 @@ G.openEditFn = function(id) {
   $('ef-income').value   = f.income   ||0;
   $('ef-expense').value  = f.expense  ||0;
   $('ef-incident').value = f.incident ||'';
-  $('ef-img').value      = f.imageUrl ||'';
-  const box=$('ef-box'),img=$('ef-pic'),err=$('ef-err');
-  if(f.imageUrl&&f.imageUrl.trim()){
-    img.src=f.imageUrl;
-    img.onload=()=>{box.classList.add('show');img.style.display='block';err.style.display='none';};
-    img.onerror=()=>{box.classList.add('show');img.style.display='none';err.style.display='flex';};
-  } else { box.classList.remove('show'); }
+  loadFnFilesInto('ef', f, false);
+  G.syncCompleteUploads('ef');
   const list=$('ef-asn'); list.innerHTML='';
   (f.assignees||[]).forEach(a=>{
     const row=document.createElement('div'); row.className='asn-row';
@@ -1577,16 +2113,34 @@ G.updateFn = async function() {
   const id=$('ef-id').value;
   const name=$('ef-name').value.trim(), date=$('ef-date').value;
   if(!name||!date){toast('Name and Date are required.','er');return;}
-  load(true,'Updating…');
+  const status = $('ef-status').value;
+  const pendingTemple = fileState.ef.temple.slice();
+  const pendingBills = fileState.ef.bills.slice();
+  load(true, status==='Completed' && (pendingTemple.length || pendingBills.length) ? 'Updating and uploading files…' : 'Updating…');
   try {
     await ensureSignedInForFirestore();
-    await updateDoc(doc(db,C_FN,id),{
-      name, date, status:$('ef-status').value,
+    const data = {
+      name, date, status,
       income:Number($('ef-income').value||0), expense:Number($('ef-expense').value||0),
-      incident:$('ef-incident').value.trim(), imageUrl:$('ef-img').value.trim(),
+      incident:$('ef-incident').value.trim(),
       assignees:gatherAsn('ef-asn'), updatedAt:new Date().toISOString()
-    });
-    closeM('m-editFn'); await fetchFns(); renderAll(); toast('Function updated!');
+    };
+    let uploadWarn = '';
+    if (status === 'Completed') {
+      try {
+        const addedTemple = await uploadGroup('functions/' + id + '/images', pendingTemple);
+        const addedBills = await uploadGroup('functions/' + id + '/bills', pendingBills);
+        data.templeImages = fileState.ef.keptTemple.map(storedImage).concat(addedTemple);
+        data.bills = fileState.ef.keptBills.map(storedImage).concat(addedBills);
+        if (fileState.ef.clearLegacy) data.imageUrl = '';
+      } catch (upErr) {
+        uploadWarn = ' Details saved, but files could not upload. ' + friendlyUploadError(upErr);
+      }
+    }
+    await updateDoc(doc(db,C_FN,id), data);
+    if (!uploadWarn && status === 'Completed') removeStoragePaths(fileState.ef.removedPaths);
+    closeM('m-editFn'); await fetchFns(); renderAll();
+    toast(uploadWarn ? uploadWarn : 'Function updated!', uploadWarn ? 'er' : 'ok');
   } catch(err){toast('Error: '+err.message,'er');}
   load(false);
 };
@@ -1597,7 +2151,16 @@ G.delFn = async function(id) {
   load(true,'Deleting…');
   try {
     await ensureSignedInForFirestore();
-    await deleteDoc(doc(db,C_FN,id)); await fetchFns(); renderAll(); toast('Function deleted.','in');
+    const f = fns.find(x => x.id === id);
+    await deleteDoc(doc(db,C_FN,id));
+    if (f) {
+      const paths = []
+        .concat(Array.isArray(f.templeImages) ? f.templeImages : [])
+        .concat(Array.isArray(f.bills) ? f.bills : [])
+        .map(x => x && x.path);
+      removeStoragePaths(paths);
+    }
+    await fetchFns(); renderAll(); toast('Function deleted.','in');
   }
   catch(err){toast('Error: '+err.message,'er');}
   load(false);
@@ -1710,19 +2273,171 @@ G.openIncM = function(id) {
   $('ic-id').value    = id;
   $('ic-text').value  = f.incident||'';
   $('ic-status').value= f.status||'Pending';
+  loadFnFilesInto('ic', f, true);
+  G.syncCompleteUploads('ic');
   openM('m-inc');
 };
 G.saveInc = async function() {
   const id=$('ic-id').value;
-  load(true,'Saving incident…');
+  const status = $('ic-status').value;
+  const pendingTemple = fileState.ic.temple.slice();
+  const pendingBills = fileState.ic.bills.slice();
+  const uploading = status === 'Completed' && (pendingTemple.length || pendingBills.length);
+  load(true, uploading ? 'Saving report and uploading files…' : 'Saving incident…');
   try {
     await ensureSignedInForFirestore();
     await updateDoc(doc(db,C_FN,id),{
-      incident:$('ic-text').value.trim(), status:$('ic-status').value,
+      incident:$('ic-text').value.trim(), status,
       updatedAt:new Date().toISOString()
     });
-    closeM('m-inc'); await fetchFns(); renderAll(); toast('Incident updated!');
+    let uploadWarn = '';
+    if (uploading) {
+      try {
+        const addedTemple = await uploadGroup('functions/' + id + '/images', pendingTemple);
+        const addedBills = await uploadGroup('functions/' + id + '/bills', pendingBills);
+        await updateDoc(doc(db,C_FN,id),{
+          templeImages: fileState.ic.keptTemple.map(storedImage).concat(addedTemple),
+          bills: fileState.ic.keptBills.map(storedImage).concat(addedBills)
+        });
+      } catch (upErr) {
+        uploadWarn = ' Report saved, but files could not upload. ' + friendlyUploadError(upErr);
+      }
+    }
+    closeM('m-inc'); await fetchFns(); renderAll();
+    toast(uploadWarn ? uploadWarn : 'Incident updated!', uploadWarn ? 'er' : 'ok');
   } catch(err){toast('Error: '+err.message,'er');}
+  load(false);
+};
+
+/* ─────── TEMPLE THINGS ─────── */
+function readItemCount(id) {
+  const raw = $(id).value;
+  if (raw === '' || Number.isNaN(Number(raw)) || Number(raw) < 0) return null;
+  return Math.floor(Number(raw));
+}
+
+G.renderItems = function() {
+  const q = (($('it-q') && $('it-q').value) || '').trim().toLowerCase();
+  const list = items.filter(it => !q || (it.name || '').toLowerCase().includes(q));
+  const sum = list.reduce((s, it) => s + Number(it.count || 0), 0);
+  if ($('it-kinds')) $('it-kinds').textContent = list.length;
+  if ($('it-sum')) $('it-sum').textContent = sum.toLocaleString('en-IN');
+  if ($('it-cnt')) $('it-cnt').textContent = list.length + ' thing(s)';
+  if (!$('it-body')) return;
+  $('it-body').innerHTML = list.length ? list.map(it => `<tr>
+      ${td(th(it.photoUrl))}
+      ${td('<b>' + e(it.name || '—') + '</b>')}
+      ${td(Number(it.count || 0).toLocaleString('en-IN'))}
+      <td><div class="flex g1">
+        <button class="btn btn-s xs ic" onclick="openEditItem('${it.id}')">✏️</button>
+        <button class="btn btn-d xs ic" onclick="delItem('${it.id}')">🗑️</button>
+      </div></td>
+    </tr>`).join('') : '<tr class="erow"><td colspan="4">No temple things yet.</td></tr>';
+};
+
+G.openAddItem = function() {
+  $('ai-name').value = '';
+  $('ai-count').value = '';
+  if (itemPhoto.ai && itemPhoto.ai.file && itemPhoto.ai.url) URL.revokeObjectURL(itemPhoto.ai.url);
+  itemPhoto.ai = null;
+  $('ai-photo').value = '';
+  showPhotoBox('ai', '');
+  openM('m-addItem');
+};
+
+G.saveItem = async function() {
+  const name = $('ai-name').value.trim();
+  const count = readItemCount('ai-count');
+  if (!name) { toast('Thing name is required.', 'er'); return; }
+  if (count === null) { toast('Enter a count of 0 or more.', 'er'); return; }
+  const photo = itemPhoto.ai && itemPhoto.ai.file ? itemPhoto.ai : null;
+  load(true, photo ? 'Saving thing and uploading photo…' : 'Saving thing…');
+  try {
+    await ensureSignedInForFirestore();
+    const refDoc = await addDoc(collection(db, C_IT), {
+      name, count, photoUrl: '', photoPath: '', createdAt: new Date().toISOString()
+    });
+    let uploadWarn = '';
+    if (photo) {
+      try {
+        const uploaded = await uploadImageFile('templeItems/' + refDoc.id, photo.file);
+        await updateDoc(refDoc, { photoUrl: uploaded.url, photoPath: uploaded.path });
+      } catch (upErr) {
+        uploadWarn = ' Thing saved, but the photo could not upload. ' + friendlyUploadError(upErr);
+      }
+    }
+    closeM('m-addItem');
+    if (photo && photo.url) URL.revokeObjectURL(photo.url);
+    itemPhoto.ai = null;
+    await fetchItems(); renderAll();
+    toast(uploadWarn ? uploadWarn : 'Temple thing saved!', uploadWarn ? 'er' : 'ok');
+  } catch (err) { toast('Error: ' + err.message, 'er'); }
+  load(false);
+};
+
+G.openEditItem = function(id) {
+  const it = items.find(x => x.id === id);
+  if (!it) return;
+  $('ei-id').value = id;
+  $('ei-name').value = it.name || '';
+  $('ei-count').value = it.count ?? 0;
+  if (itemPhoto.ei && itemPhoto.ei.file && itemPhoto.ei.url) URL.revokeObjectURL(itemPhoto.ei.url);
+  itemPhoto.ei = { file: null, url: '', existingPath: it.photoPath || '', removeExisting: false };
+  $('ei-photo').value = '';
+  showPhotoBox('ei', it.photoUrl || '');
+  openM('m-editItem');
+};
+
+G.updateItem = async function() {
+  const id = $('ei-id').value;
+  const name = $('ei-name').value.trim();
+  const count = readItemCount('ei-count');
+  if (!name) { toast('Thing name is required.', 'er'); return; }
+  if (count === null) { toast('Enter a count of 0 or more.', 'er'); return; }
+  const photo = itemPhoto.ei;
+  const replacing = photo && photo.file;
+  load(true, replacing ? 'Updating thing and uploading photo…' : 'Updating thing…');
+  try {
+    await ensureSignedInForFirestore();
+    const data = { name, count, updatedAt: new Date().toISOString() };
+    let uploadWarn = '';
+    let oldPath = '';
+    if (replacing) {
+      try {
+        const uploaded = await uploadImageFile('templeItems/' + id, photo.file);
+        data.photoUrl = uploaded.url;
+        data.photoPath = uploaded.path;
+        oldPath = photo.existingPath || '';
+      } catch (upErr) {
+        uploadWarn = ' Details saved, but the photo could not upload. ' + friendlyUploadError(upErr);
+      }
+    } else if (photo && photo.removeExisting) {
+      data.photoUrl = '';
+      data.photoPath = '';
+      oldPath = photo.existingPath || '';
+    }
+    await updateDoc(doc(db, C_IT, id), data);
+    if (oldPath && !uploadWarn) removeStoragePaths([oldPath]);
+    closeM('m-editItem');
+    if (replacing && photo.url) URL.revokeObjectURL(photo.url);
+    itemPhoto.ei = null;
+    await fetchItems(); renderAll();
+    toast(uploadWarn ? uploadWarn : 'Temple thing updated!', uploadWarn ? 'er' : 'ok');
+  } catch (err) { toast('Error: ' + err.message, 'er'); }
+  load(false);
+};
+
+G.delItem = async function(id) {
+  if (!confirm('Delete this temple thing?')) return;
+  load(true, 'Deleting…');
+  try {
+    await ensureSignedInForFirestore();
+    const it = items.find(x => x.id === id);
+    await deleteDoc(doc(db, C_IT, id));
+    if (it && it.photoPath) removeStoragePaths([it.photoPath]);
+    await fetchItems(); renderAll();
+    toast('Temple thing deleted.', 'in');
+  } catch (err) { toast('Error: ' + err.message, 'er'); }
   load(false);
 };
 
@@ -1740,6 +2455,7 @@ async function loadStaffData() {
     await ensureSignedInForFirestore();
     await fetchFns();
     await fetchDrs();
+    await fetchItemsSafe();
     $('dbStatus').textContent = '● Firestore Connected';
     renderAll();
     if (!dataBooted) {
@@ -1761,6 +2477,7 @@ function showLoginScreen() {
   syncSettingsNav(null);
   fns = [];
   drs = [];
+  items = [];
   dataBooted = false;
   try { renderAll(); } catch (_) {}
 }
