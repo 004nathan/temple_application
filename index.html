@@ -732,28 +732,6 @@ service cloud.firestore {
         <p style="font-size:.73rem;color:#B45309;background:#FFFBEB;border:1px solid #FDE68A;border-radius:var(--rs);padding:10px 12px;margin-top:10px;line-height:1.55"><strong>Updates show “Missing or insufficient permissions”?</strong> In the Firebase Console → Firestore → Rules, make sure writes use <code style="font-size:.72rem;background:rgba(0,0,0,.06);padding:1px 5px;border-radius:3px">request.auth != null</code> (signed-in <em>allowed</em>). An older template used <code style="font-size:.72rem">request.auth == null</code>, which <em>blocks</em> signed-in staff from saving. Copy the rules above exactly and click <strong>Publish</strong>.</p>
       </div>
 
-      <div>
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-          <span style="background:#EFF6FF;color:#1D4ED8;border:1px solid #BFDBFE;border-radius:999px;padding:2px 10px;font-size:.7rem;font-weight:600">STORAGE RULES</span>
-          <span style="font-size:.78rem;color:var(--ts)">Needed for temple photos, bills, and thing photos</span>
-        </div>
-        <div style="background:var(--bg);border:1px solid var(--bd);border-radius:var(--rs);padding:13px 15px;font-family:monospace;font-size:.78rem;line-height:1.9;color:var(--tx);position:relative">
-          <button onclick="copyRule('rule-storage')" style="position:absolute;top:8px;right:8px;background:var(--sf);border:1px solid var(--bds);border-radius:5px;padding:3px 9px;font-size:.72rem;cursor:pointer;color:var(--tm)">Copy</button>
-          <pre id="rule-storage" style="margin:0;white-space:pre-wrap">rules_version = '2';
-service firebase.storage {
-  match /b/{bucket}/o {
-    match /functions/{fnId}/{allPaths=**} {
-      allow read, write: if request.auth != null;
-    }
-    match /templeItems/{itemId}/{allPaths=**} {
-      allow read, write: if request.auth != null;
-    }
-  }
-}</pre>
-        </div>
-        <p style="font-size:.73rem;color:var(--ts);margin-top:6px">Firebase Console → Storage → Rules → paste → Publish. Also open Storage once so the bucket is created.</p>
-      </div>
-
       <!-- How to apply -->
       <div style="background:var(--pale);border:1px solid var(--pb);border-radius:var(--rs);padding:13px 15px">
         <p style="font-size:.82rem;font-weight:600;color:var(--p);margin:0 0 8px">How to apply rules in Firebase Console</p>
@@ -1209,9 +1187,6 @@ import {
   getFirestore, collection, addDoc, getDocs, doc,
   updateDoc, deleteDoc, query, orderBy
 } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
-import {
-  getStorage, ref as storageRef, uploadBytes, getDownloadURL, deleteObject
-} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js';
 
 /* ─── Config ─── */
 const CFG = {
@@ -1232,7 +1207,6 @@ const SETTINGS_ADMIN_EMAIL = 'parvathinathanbala@gmail.com';
 const app  = initializeApp(CFG);
 const db   = getFirestore(app);
 const auth = getAuth(app);
-const storage = getStorage(app);
 
 /* ─── Collections ─── */
 const C_FN = 'functions';
@@ -1670,7 +1644,7 @@ G.onPickFiles = function(prefix, kind) {
   const st = fileState[prefix];
   const bucket = kind === 'temple' ? st.temple : st.bills;
   [...input.files].forEach(file => {
-    if (!file.type || !file.type.startsWith('image/')) {
+    if (!isImageFile(file)) {
       toast('Please choose image files only.', 'er');
       return;
     }
@@ -1684,53 +1658,72 @@ G.onPickFiles = function(prefix, kind) {
   refreshFilePreviews(prefix);
 };
 
-function friendlyUploadError(err) {
-  const code = String((err && err.code) || '');
-  const msg = String((err && err.message) || '');
-  if (code.indexOf('storage') !== -1 || msg.toLowerCase().indexOf('storage') !== -1 || code === 'storage/unauthorized') {
-    return 'Could not upload. In Firebase Console, open Storage once, then publish the Storage rules from Settings.';
-  }
-  return msg || 'Upload failed';
+function isImageFile(file) {
+  const type = file && file.type ? file.type : '';
+  if (type.startsWith('image/')) return true;
+  return /\.(jpe?g|png|gif|webp|bmp|heic|heif)$/i.test((file && file.name) || '');
 }
 
-function compressImage(file) {
-  return createImageBitmap(file, { imageOrientation: 'from-image' }).catch(() => createImageBitmap(file))
-    .then(bitmap => new Promise((resolve, reject) => {
-      const maxSide = 1600;
-      const scale = Math.min(1, maxSide / Math.max(bitmap.width, bitmap.height));
-      const w = Math.max(1, Math.round(bitmap.width * scale));
-      const h = Math.max(1, Math.round(bitmap.height * scale));
-      const canvas = document.createElement('canvas');
-      canvas.width = w;
-      canvas.height = h;
-      canvas.getContext('2d').drawImage(bitmap, 0, 0, w, h);
-      if (bitmap.close) bitmap.close();
-      canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error('Could not prepare image')), 'image/jpeg', 0.76);
+function friendlyUploadError(err) {
+  return (err && err.message) || 'Could not save the photo.';
+}
+
+function loadImageSource(file) {
+  return createImageBitmap(file, { imageOrientation: 'from-image' })
+    .catch(() => createImageBitmap(file))
+    .catch(() => new Promise((resolve, reject) => {
+      const img = new Image();
+      const obj = URL.createObjectURL(file);
+      img.onload = () => { URL.revokeObjectURL(obj); resolve(img); };
+      img.onerror = () => {
+        URL.revokeObjectURL(obj);
+        reject(new Error('Could not read this photo. Use a JPG or PNG.'));
+      };
+      img.src = obj;
     }));
 }
 
-async function uploadImageFile(folder, file) {
-  const blob = await compressImage(file);
-  const path = folder + '/' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8) + '.jpg';
-  const r = storageRef(storage, path);
-  await uploadBytes(r, blob, { contentType: 'image/jpeg' });
-  const url = await getDownloadURL(r);
-  return { name: file.name, url, path };
+function drawJpeg(source, maxSide, quality) {
+  const sw = source.width || source.naturalWidth;
+  const sh = source.height || source.naturalHeight;
+  if (!sw || !sh) throw new Error('Could not read this photo. Use a JPG or PNG.');
+  const scale = Math.min(1, maxSide / Math.max(sw, sh));
+  const w = Math.max(1, Math.round(sw * scale));
+  const h = Math.max(1, Math.round(sh * scale));
+  const canvas = document.createElement('canvas');
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, w, h);
+  ctx.drawImage(source, 0, 0, w, h);
+  return canvas.toDataURL('image/jpeg', quality);
 }
 
-async function uploadGroup(folder, picks) {
+async function prepareStoredImage(file) {
+  const source = await loadImageSource(file);
+  let url = drawJpeg(source, 1024, 0.72);
+  if (url.length > 280000) url = drawJpeg(source, 800, 0.6);
+  if (url.length > 280000) url = drawJpeg(source, 640, 0.5);
+  if (source.close) source.close();
+  if (!url || !url.startsWith('data:image/')) throw new Error('Could not prepare this photo.');
+  return { name: file.name || 'Photo', url };
+}
+
+async function uploadGroup(picks) {
   const out = [];
-  for (const pick of picks) out.push(await uploadImageFile(folder, pick.file));
+  for (const pick of picks) out.push(await prepareStoredImage(pick.file));
   return out;
 }
 
 function storedImage(x) {
-  return { name: x.name || 'Photo', url: x.url, path: x.path || '' };
+  return { name: x.name || 'Photo', url: x.url };
 }
 
-async function removeStoragePaths(paths) {
-  const uniq = [...new Set((paths || []).filter(Boolean))];
-  await Promise.all(uniq.map(p => deleteObject(storageRef(storage, p)).catch(() => {})));
+function assertImagePayload(parts) {
+  if (new Blob([JSON.stringify(parts)]).size > 900000) {
+    throw new Error('These photos are too large to save together. Remove one and try again.');
+  }
 }
 
 function showPhotoBox(prefix, src) {
@@ -1754,7 +1747,7 @@ G.onItemPhoto = function(prefix) {
   const file = input.files && input.files[0];
   input.value = '';
   if (!file) return;
-  if (!file.type || !file.type.startsWith('image/')) { toast('Please choose an image file.', 'er'); return; }
+  if (!isImageFile(file)) { toast('Please choose an image file.', 'er'); return; }
   if (file.size > 15 * 1024 * 1024) { toast(file.name + ' is larger than 15 MB.', 'er'); return; }
   if (itemPhoto[prefix] && itemPhoto[prefix].url && itemPhoto[prefix].file) URL.revokeObjectURL(itemPhoto[prefix].url);
   const url = URL.createObjectURL(file);
@@ -2058,20 +2051,17 @@ G.saveFn = async function() {
   if (!name||!date) { toast('Name and Date are required.','er'); return; }
   const pendingTemple = fileState.af.temple.slice();
   const pendingBills = fileState.af.bills.slice();
-  load(true, status==='Completed' && (pendingTemple.length || pendingBills.length) ? 'Saving function and uploading files…' : 'Saving function…');
+  load(true, status==='Completed' && (pendingTemple.length || pendingBills.length) ? 'Saving function and photos…' : 'Saving function…');
   try {
     await ensureSignedInForFirestore();
-    const refDoc = await addDoc(collection(db,C_FN),{name,date,status,income,expense,incident,assignees,templeImages:[],bills:[],createdAt:new Date().toISOString()});
-    let uploadWarn = '';
+    let templeImages = [];
+    let bills = [];
     if (status === 'Completed' && (pendingTemple.length || pendingBills.length)) {
-      try {
-        const templeImages = await uploadGroup('functions/' + refDoc.id + '/images', pendingTemple);
-        const bills = await uploadGroup('functions/' + refDoc.id + '/bills', pendingBills);
-        await updateDoc(refDoc, { templeImages, bills });
-      } catch (upErr) {
-        uploadWarn = ' Function saved, but files could not upload. ' + friendlyUploadError(upErr);
-      }
+      templeImages = await uploadGroup(pendingTemple);
+      bills = await uploadGroup(pendingBills);
+      assertImagePayload({ templeImages, bills });
     }
+    await addDoc(collection(db,C_FN),{name,date,status,income,expense,incident,assignees,templeImages,bills,createdAt:new Date().toISOString()});
     closeM('m-addFn');
     ['af-name','af-income','af-expense','af-incident'].forEach(id=>$(id).value='');
     $('af-status').value='Pending'; $('af-asn').innerHTML='';
@@ -2079,8 +2069,8 @@ G.saveFn = async function() {
     G.syncCompleteUploads('af');
     $('af-date').value = today();
     await fetchFns(); renderAll();
-    toast(uploadWarn ? uploadWarn : 'Function saved!', uploadWarn ? 'er' : 'ok');
-  } catch(err) { toast('Error: '+err.message,'er'); }
+    toast('Function saved!');
+  } catch(err) { toast('Error: '+friendlyUploadError(err),'er'); }
   load(false);
 };
 
@@ -2116,7 +2106,7 @@ G.updateFn = async function() {
   const status = $('ef-status').value;
   const pendingTemple = fileState.ef.temple.slice();
   const pendingBills = fileState.ef.bills.slice();
-  load(true, status==='Completed' && (pendingTemple.length || pendingBills.length) ? 'Updating and uploading files…' : 'Updating…');
+  load(true, status==='Completed' && (pendingTemple.length || pendingBills.length) ? 'Updating and saving photos…' : 'Updating…');
   try {
     await ensureSignedInForFirestore();
     const data = {
@@ -2125,23 +2115,18 @@ G.updateFn = async function() {
       incident:$('ef-incident').value.trim(),
       assignees:gatherAsn('ef-asn'), updatedAt:new Date().toISOString()
     };
-    let uploadWarn = '';
     if (status === 'Completed') {
-      try {
-        const addedTemple = await uploadGroup('functions/' + id + '/images', pendingTemple);
-        const addedBills = await uploadGroup('functions/' + id + '/bills', pendingBills);
-        data.templeImages = fileState.ef.keptTemple.map(storedImage).concat(addedTemple);
-        data.bills = fileState.ef.keptBills.map(storedImage).concat(addedBills);
-        if (fileState.ef.clearLegacy) data.imageUrl = '';
-      } catch (upErr) {
-        uploadWarn = ' Details saved, but files could not upload. ' + friendlyUploadError(upErr);
-      }
+      const addedTemple = await uploadGroup(pendingTemple);
+      const addedBills = await uploadGroup(pendingBills);
+      data.templeImages = fileState.ef.keptTemple.map(storedImage).concat(addedTemple);
+      data.bills = fileState.ef.keptBills.map(storedImage).concat(addedBills);
+      assertImagePayload({ templeImages: data.templeImages, bills: data.bills });
+      if (fileState.ef.clearLegacy) data.imageUrl = '';
     }
     await updateDoc(doc(db,C_FN,id), data);
-    if (!uploadWarn && status === 'Completed') removeStoragePaths(fileState.ef.removedPaths);
     closeM('m-editFn'); await fetchFns(); renderAll();
-    toast(uploadWarn ? uploadWarn : 'Function updated!', uploadWarn ? 'er' : 'ok');
-  } catch(err){toast('Error: '+err.message,'er');}
+    toast('Function updated!');
+  } catch(err){toast('Error: '+friendlyUploadError(err),'er');}
   load(false);
 };
 
@@ -2151,15 +2136,7 @@ G.delFn = async function(id) {
   load(true,'Deleting…');
   try {
     await ensureSignedInForFirestore();
-    const f = fns.find(x => x.id === id);
     await deleteDoc(doc(db,C_FN,id));
-    if (f) {
-      const paths = []
-        .concat(Array.isArray(f.templeImages) ? f.templeImages : [])
-        .concat(Array.isArray(f.bills) ? f.bills : [])
-        .map(x => x && x.path);
-      removeStoragePaths(paths);
-    }
     await fetchFns(); renderAll(); toast('Function deleted.','in');
   }
   catch(err){toast('Error: '+err.message,'er');}
@@ -2283,29 +2260,24 @@ G.saveInc = async function() {
   const pendingTemple = fileState.ic.temple.slice();
   const pendingBills = fileState.ic.bills.slice();
   const uploading = status === 'Completed' && (pendingTemple.length || pendingBills.length);
-  load(true, uploading ? 'Saving report and uploading files…' : 'Saving incident…');
+  load(true, uploading ? 'Saving report and photos…' : 'Saving incident…');
   try {
     await ensureSignedInForFirestore();
-    await updateDoc(doc(db,C_FN,id),{
+    const data = {
       incident:$('ic-text').value.trim(), status,
       updatedAt:new Date().toISOString()
-    });
-    let uploadWarn = '';
+    };
     if (uploading) {
-      try {
-        const addedTemple = await uploadGroup('functions/' + id + '/images', pendingTemple);
-        const addedBills = await uploadGroup('functions/' + id + '/bills', pendingBills);
-        await updateDoc(doc(db,C_FN,id),{
-          templeImages: fileState.ic.keptTemple.map(storedImage).concat(addedTemple),
-          bills: fileState.ic.keptBills.map(storedImage).concat(addedBills)
-        });
-      } catch (upErr) {
-        uploadWarn = ' Report saved, but files could not upload. ' + friendlyUploadError(upErr);
-      }
+      const addedTemple = await uploadGroup(pendingTemple);
+      const addedBills = await uploadGroup(pendingBills);
+      data.templeImages = fileState.ic.keptTemple.map(storedImage).concat(addedTemple);
+      data.bills = fileState.ic.keptBills.map(storedImage).concat(addedBills);
+      assertImagePayload({ templeImages: data.templeImages, bills: data.bills });
     }
+    await updateDoc(doc(db,C_FN,id), data);
     closeM('m-inc'); await fetchFns(); renderAll();
-    toast(uploadWarn ? uploadWarn : 'Incident updated!', uploadWarn ? 'er' : 'ok');
-  } catch(err){toast('Error: '+err.message,'er');}
+    toast('Incident updated!');
+  } catch(err){toast('Error: '+friendlyUploadError(err),'er');}
   load(false);
 };
 
@@ -2351,27 +2323,20 @@ G.saveItem = async function() {
   if (!name) { toast('Thing name is required.', 'er'); return; }
   if (count === null) { toast('Enter a count of 0 or more.', 'er'); return; }
   const photo = itemPhoto.ai && itemPhoto.ai.file ? itemPhoto.ai : null;
-  load(true, photo ? 'Saving thing and uploading photo…' : 'Saving thing…');
+  load(true, photo ? 'Saving thing and photo…' : 'Saving thing…');
   try {
     await ensureSignedInForFirestore();
-    const refDoc = await addDoc(collection(db, C_IT), {
-      name, count, photoUrl: '', photoPath: '', createdAt: new Date().toISOString()
+    let photoUrl = '';
+    if (photo) photoUrl = (await prepareStoredImage(photo.file)).url;
+    await addDoc(collection(db, C_IT), {
+      name, count, photoUrl, createdAt: new Date().toISOString()
     });
-    let uploadWarn = '';
-    if (photo) {
-      try {
-        const uploaded = await uploadImageFile('templeItems/' + refDoc.id, photo.file);
-        await updateDoc(refDoc, { photoUrl: uploaded.url, photoPath: uploaded.path });
-      } catch (upErr) {
-        uploadWarn = ' Thing saved, but the photo could not upload. ' + friendlyUploadError(upErr);
-      }
-    }
     closeM('m-addItem');
     if (photo && photo.url) URL.revokeObjectURL(photo.url);
     itemPhoto.ai = null;
     await fetchItems(); renderAll();
-    toast(uploadWarn ? uploadWarn : 'Temple thing saved!', uploadWarn ? 'er' : 'ok');
-  } catch (err) { toast('Error: ' + err.message, 'er'); }
+    toast('Temple thing saved!');
+  } catch (err) { toast('Error: ' + friendlyUploadError(err), 'er'); }
   load(false);
 };
 
@@ -2396,34 +2361,19 @@ G.updateItem = async function() {
   if (count === null) { toast('Enter a count of 0 or more.', 'er'); return; }
   const photo = itemPhoto.ei;
   const replacing = photo && photo.file;
-  load(true, replacing ? 'Updating thing and uploading photo…' : 'Updating thing…');
+  load(true, replacing ? 'Updating thing and photo…' : 'Updating thing…');
   try {
     await ensureSignedInForFirestore();
     const data = { name, count, updatedAt: new Date().toISOString() };
-    let uploadWarn = '';
-    let oldPath = '';
-    if (replacing) {
-      try {
-        const uploaded = await uploadImageFile('templeItems/' + id, photo.file);
-        data.photoUrl = uploaded.url;
-        data.photoPath = uploaded.path;
-        oldPath = photo.existingPath || '';
-      } catch (upErr) {
-        uploadWarn = ' Details saved, but the photo could not upload. ' + friendlyUploadError(upErr);
-      }
-    } else if (photo && photo.removeExisting) {
-      data.photoUrl = '';
-      data.photoPath = '';
-      oldPath = photo.existingPath || '';
-    }
+    if (replacing) data.photoUrl = (await prepareStoredImage(photo.file)).url;
+    else if (photo && photo.removeExisting) data.photoUrl = '';
     await updateDoc(doc(db, C_IT, id), data);
-    if (oldPath && !uploadWarn) removeStoragePaths([oldPath]);
     closeM('m-editItem');
     if (replacing && photo.url) URL.revokeObjectURL(photo.url);
     itemPhoto.ei = null;
     await fetchItems(); renderAll();
-    toast(uploadWarn ? uploadWarn : 'Temple thing updated!', uploadWarn ? 'er' : 'ok');
-  } catch (err) { toast('Error: ' + err.message, 'er'); }
+    toast('Temple thing updated!');
+  } catch (err) { toast('Error: ' + friendlyUploadError(err), 'er'); }
   load(false);
 };
 
@@ -2432,9 +2382,7 @@ G.delItem = async function(id) {
   load(true, 'Deleting…');
   try {
     await ensureSignedInForFirestore();
-    const it = items.find(x => x.id === id);
     await deleteDoc(doc(db, C_IT, id));
-    if (it && it.photoPath) removeStoragePaths([it.photoPath]);
     await fetchItems(); renderAll();
     toast('Temple thing deleted.', 'in');
   } catch (err) { toast('Error: ' + err.message, 'er'); }
